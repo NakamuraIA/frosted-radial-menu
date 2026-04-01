@@ -1,0 +1,52 @@
+{
+  "menu": {
+    "label": "Root",
+    "items": [
+      {
+        "label": "Apps",
+        "icon": "layout-grid",
+        "children": [
+          { "label": "Terminal", "icon": "terminal", "action": "run", "target": "wt.exe" },
+          { "label": "Explorer", "icon": "folder", "action": "run", "target": "explorer.exe" },
+          { "label": "Notepad", "icon": "file-text", "action": "run", "target": "notepad.exe" },
+          { "label": "Calculator", "icon": "calculator", "action": "run", "target": "calc.exe" }
+        ]
+      },
+      {
+        "label": "Web",
+        "icon": "globe",
+        "children": [
+          { "label": "Google", "icon": "search", "action": "url", "target": "https://www.google.com" },
+          { "label": "GitHub", "icon": "git-branch", "action": "url", "target": "https://github.com" },
+          { "label": "YouTube", "icon": "play", "action": "url", "target": "https://www.youtube.com" }
+        ]
+      },
+      {
+        "label": "System",
+        "icon": "settings",
+        "children": [
+          { "label": "Task Manager", "icon": "monitor", "action": "run", "target": "taskmgr.exe" },
+          { "label": "Settings", "icon": "sliders", "action": "run", "target": "start ms-settings:" },
+          { "label": "Wi-Fi", "icon": "wifi", "action": "run", "target": "start ms-settings:network-wifi" },
+          { "label": "Bluetooth", "icon": "bluetooth", "action": "run", "target": "start ms-settings:bluetooth" },
+          { "label": "Lock PC", "icon": "lock", "action": "shortcut", "target": "win+l" }
+        ]
+      },
+      { "label": "Search", "icon": "search", "action": "shortcut", "target": "win+s" },
+      { "label": "Screenshot", "icon": "camera", "action": "run", "target": "snippingtool.exe" },
+      { "label": "Clipboard", "icon": "clipboard", "action": "clipboard_history" }
+    ]
+  },
+  "settings": {
+    "inner_radius": 55,
+    "outer_radius": 155,
+    "max_items_per_level": 8,
+    "animation_duration_ms": 500,
+    "ghost_opacity": 0.3,
+    "accent_color": "#00DCFF",
+    "secondary_accent_color": "#FF007A",
+    "enable_monitoring": true,
+    "background_tint": "rgba(0, 0, 0, 0.6)",
+    "hotkey": "<alt>+<space>"
+  }
+}

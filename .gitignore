@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+.pytest_cache/
+.mypy_cache/
+
+# Local user config
+config/config.local.json
+
+# Windows shortcuts and generated files
+*.lnk
