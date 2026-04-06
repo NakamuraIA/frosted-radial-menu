@@ -1,8 +1,8 @@
-# Menu Radial - Frosted Glass
+# Menu Radial — Frosted Glass
 
-A customizable radial productivity menu for Windows with recursive submenus, quick actions, and a frosted-glass UI.
+A customizable radial productivity menu for Windows with glassmorphism UI, recursive submenus, per-item icon control, and a robust global hotkey system.
 
-Um menu radial para Windows feito com **PySide6**, com visual glassmorphism, atalho global e configuracao por JSON.
+Um menu radial para Windows feito com **PySide6**, com visual *glassmorphism*, atalho global configurável e interface gráfica de configuração.
 
 O objetivo deste repositorio e ser facil de usar mesmo sem compilar: baixar, dar dois cliques no instalador e usar.
 
@@ -12,13 +12,25 @@ O objetivo deste repositorio e ser facil de usar mesmo sem compilar: baixar, dar
 
 ![Menu radial com submenu](assets/screenshots/image.png)
 
+### Novos recursos visuais
+
+| Editar Atalhos | Configuracoes |
+|:-:|:-:|
+| ![Editar atalho](assets/screenshots/imagem_3.png) | ![Configuracoes](assets/screenshots/imagem_5.png) |
+
+![Editor de item](assets/screenshots/imagem_4.png)
+
 ## O que ele faz
 
 - Abre um menu radial perto do cursor com `Alt + Espaco`
 - Executa programas, atalhos de teclado, pastas, scripts e URLs
 - Fica rodando na bandeja do sistema
-- Permite editar o menu pelo arquivo `config/config.json`
 - Tem suporte a submenu e visual animado
+- **Interface grafica de configuracao** — sem precisar editar JSON manualmente
+- **Sistema de icones flexivel**: extrai icone nativo do .exe, usa imagem customizada ou icone SVG
+- **Escala de icone por item** — controle individual de tamanho para cada atalho
+- **Atalhos de mouse e teclado**: suporte a `mouse_middle`, `mouse_side1`, `mouse_side2` alem de combinacoes de teclado
+- **Fecha ao clicar fora** via hook global — funciona mesmo clicando no desktop ou em outro app
 
 ## Instalacao Facil no Windows
 
@@ -86,3 +98,44 @@ Quando esse arquivo existir, ele tem prioridade sobre o `config/config.json`.
 - Este projeto e focado em Windows.
 - O repositorio nao precisa ser compilado para funcionar.
 - Dependencias atuais: `PySide6`, `pynput` e `psutil`.
+
+---
+
+## Novidades
+
+### Interface Grafica de Configuracao
+
+Acesse em: bandeja do sistema → botao direito → **Configuracoes**.
+
+- Preview visual do menu em tempo real
+- Adicione, remova e reordene atalhos
+- Editor completo por item sem editar JSON
+
+### Sistema de Icones por Item
+
+Cada atalho pode usar um dos tres modos:
+
+| Modo | Descricao |
+|---|---|
+| **Auto** | Extrai o icone nativo do executavel automaticamente |
+| **Imagem** | Usa imagem customizada (PNG, ICO, JPG...) |
+| **SVG** | Usa icones vetoriais da biblioteca Lucide embutida |
+
+### Escala de Icone Individual
+
+Slider de **50% a 200%** por item. O label do atalho acompanha o tamanho do icone automaticamente.
+
+### Atalhos Globais Ampliados
+
+Suporte a qualquer combinacao de teclas e **botoes do mouse**:
+
+```
+Alt+Espaco   Ctrl+F1   Win+R   mouse_middle   mouse_side1   mouse_side2
+```
+
+Configure em Configuracoes → campo Atalho.
+
+### Fechar ao Clicar Fora
+
+O menu fecha automaticamente ao clicar em qualquer area fora dele,
+incluindo desktop e outras janelas, via hook global Win32.

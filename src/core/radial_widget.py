@@ -13,7 +13,7 @@ from pathlib import Path
 from PySide6.QtWidgets import QWidget, QToolTip
 from PySide6.QtGui import (
     QPainter, QPainterPath, QColor, QPen, QBrush, QFont,
-    QRadialGradient, QConicalGradient, QFontMetrics,
+    QRadialGradient, QConicalGradient, QFontMetrics, QPixmap,
 )
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtCore import (
@@ -23,6 +23,7 @@ from PySide6.QtCore import (
 )
 
 from .menu_item import MenuItem
+from .icon_utils import get_app_icon
 
 
 class RadialWidget(QWidget):
@@ -33,8 +34,8 @@ class RadialWidget(QWidget):
     close_requested = Signal()      # Clique fora do menu
 
     # ── Constantes de layout ───────────────────────────────
-    PADDING = 60            # Espaço extra ao redor do anel
-    ICON_SIZE = 24          # Tamanho dos ícones SVG
+    PADDING = 20            # Espaço extra ao redor do anel (mínimo p/ animações)
+    ICON_SIZE = 52          # Tamanho dos ícones SVG/PNG
     LABEL_FONT_SIZE = 9     # Tamanho da fonte dos labels
     GAP_BETWEEN_SLICES = 2  # Graus de gap entre fatias
     CENTER_ICON_SIZE = 20   # Ícone do botão central
@@ -50,7 +51,10 @@ class RadialWidget(QWidget):
     ):
         super().__init__(parent)
         self.setMouseTracking(True)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        # NÃO setar WA_TranslucentBackground aqui (só vale para top-level)
+        # O fundo é limpo no paintEvent via CompositionMode_Source
+        self.setAttribute(Qt.WA_NoSystemBackground)
+        self.setAutoFillBackground(False)
 
         # ── Geometria ──
         self._inner_radius = inner_radius
@@ -94,6 +98,7 @@ class RadialWidget(QWidget):
         # ── Ícones SVG ──
         self._icons_dir = Path(icons_dir) if icons_dir else Path()
         self._svg_cache: dict[str, QSvgRenderer] = {}
+        self._pixmap_cache: dict[str, QPixmap] = {}
         self._load_back_icon()
 
         # ── Dimensões ──
@@ -305,7 +310,14 @@ class RadialWidget(QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
 
-        # Aplicar opacidade global da animação
+        # Limpa ESTA área do widget para alpha=0 antes de qualquer desenho.
+        # Necessário porque Qt pode preencher o background do child widget com
+        # a cor da palette DEPOIS do paintEvent do pai e ANTES deste paintEvent.
+        # CompositionMode_Source escreve diretamente no backing store com alpha 0.
+        painter.setCompositionMode(QPainter.CompositionMode_Source)
+        painter.fillRect(self.rect(), Qt.transparent)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+
         painter.setOpacity(self._anim_opacity)
 
         inner_r, outer_r = self._animated_radii()
@@ -430,66 +442,120 @@ class RadialWidget(QWidget):
 
             # ── Ícone ──
             item_pos = self._get_item_pos(i, count)
-            self._paint_icon(painter, item.icon, item_pos, is_hovered)
+            self._paint_icon(
+                painter, item.icon, item_pos, is_hovered,
+                custom_icon=item.custom_icon,
+                action=item.action,
+                target=item.target,
+                icon_mode=item.icon_mode,
+                icon_scale=item.icon_scale,
+            )
 
             # ── Label ──
-            self._paint_label(painter, item.label, item_pos, is_hovered)
+            self._paint_label(
+                painter, item.label, item_pos, is_hovered,
+                icon_scale=item.icon_scale,
+            )
 
             # ── Indicador de sub-menu ──
             if item.has_children:
                 self._paint_submenu_indicator(painter, i, count, outer_r)
 
-    def _paint_icon(self, painter: QPainter, icon_name: str, pos: QPointF, hovered: bool):
-        """Desenha um ícone SVG centralizado na posição."""
-        if not icon_name:
-            return
-
-        renderer = self._get_svg_renderer(icon_name)
-        if renderer is None:
-            return
-
-        half = self.ICON_SIZE / 2.0
+    def _paint_icon(
+        self, painter: QPainter, icon_name: str, pos: QPointF,
+        hovered: bool, custom_icon: str = "",
+        action: str = "", target: str = "",
+        icon_mode: str = "auto", icon_scale: float = 1.0
+    ):
+        """Hierarquia conforme icon_mode:
+          auto   → auto-extract → fallback SVG
+          custom → imagem do usuário → fallback SVG
+          svg    → apenas SVG Lucide
+        icon_scale é um multiplicador sobre ICON_SIZE (1.0 = 100%).
+        """
+        actual_sz = max(8, int(self.ICON_SIZE * icon_scale))
+        half = actual_sz / 2.0
+        y_offset = -(half + 5)
         icon_rect = QRectF(
             pos.x() - half,
-            pos.y() - half - 6,  # Offset pra cima para dar espaço ao label
-            self.ICON_SIZE,
-            self.ICON_SIZE,
+            pos.y() + y_offset,
+            actual_sz,
+            actual_sz,
         )
 
         painter.save()
-        if hovered:
-            painter.setOpacity(self._anim_opacity * 1.0)
-        else:
-            painter.setOpacity(self._anim_opacity * 0.85)
-        renderer.render(painter, icon_rect)
+        painter.setOpacity(self._anim_opacity * (1.0 if hovered else 0.85))
+
+        def _draw_pm(pm: QPixmap) -> bool:
+            if pm and not pm.isNull():
+                sc = pm.scaled(actual_sz, actual_sz,
+                               Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                painter.drawPixmap(int(icon_rect.x()), int(icon_rect.y()), sc)
+                return True
+            return False
+
+        def _draw_svg() -> bool:
+            if icon_name:
+                r = self._get_svg_renderer(icon_name)
+                if r:
+                    r.render(painter, icon_rect)
+                    return True
+            return False
+
+        if icon_mode == "svg":
+            _draw_svg()
+        elif icon_mode == "custom":
+            if not _draw_pm(self._get_pixmap(custom_icon)):
+                _draw_svg()
+        else:  # "auto"
+            if custom_icon and _draw_pm(self._get_pixmap(custom_icon)):
+                pass
+            elif action and target and _draw_pm(
+                get_app_icon(action, target, size=256)
+            ):
+                pass
+            else:
+                _draw_svg()
+
         painter.restore()
 
-    def _paint_label(self, painter: QPainter, label: str, pos: QPointF, hovered: bool):
-        """Desenha o label de texto abaixo do ícone."""
+    def _paint_label(
+        self, painter: QPainter, label: str, pos: QPointF,
+        hovered: bool, icon_scale: float = 1.0
+    ):
+        """Desenha o label abaixo do ícone.
+        A fonte e a posição Y acompanham o icon_scale.
+        """
         if not label:
             return
 
+        # Tamanho do ícone real (mesma lógica do _paint_icon)
+        actual_sz  = max(8, int(self.ICON_SIZE * icon_scale))
+        half_icon  = actual_sz / 2.0
+        y_icon_top = -(half_icon + 5)          # topo do ícone relativo a pos.y
+        icon_bottom_y = pos.y() + y_icon_top + actual_sz   # borda inferior do ícone
+
+        # Fonte proporcional: escala suavizada para não ficar muito pequena
+        font_size = max(6, min(int(self.LABEL_FONT_SIZE * icon_scale), 12))
+        font = QFont("Segoe UI", font_size)
+        font.setWeight(QFont.DemiBold if hovered else QFont.Medium)
+
+        # Largura do texto acompanha a escala (mínimo 40 px)
+        half_w = max(20, int(42 * icon_scale))
+
         painter.save()
-
-        font = QFont("Segoe UI", self.LABEL_FONT_SIZE)
-        font.setWeight(QFont.Medium if hovered else QFont.Normal)
         painter.setFont(font)
+        painter.setPen(
+            QColor(255, 255, 255, 240 if hovered else 180)
+        )
 
-        if hovered:
-            color = QColor(255, 255, 255, 240)
-        else:
-            color = QColor(255, 255, 255, 180)
-        painter.setPen(color)
-
-        # Posicionar abaixo do ícone
         text_rect = QRectF(
-            pos.x() - 40,
-            pos.y() + self.ICON_SIZE / 2.0 - 2,
-            80,
-            20,
+            pos.x() - half_w,
+            icon_bottom_y + 2,    # 2 px abaixo da borda do ícone
+            half_w * 2,
+            max(12, font_size + 4),
         )
         painter.drawText(text_rect, Qt.AlignCenter, label)
-
         painter.restore()
 
     def _paint_submenu_indicator(
@@ -690,6 +756,18 @@ class RadialWidget(QWidget):
                 self._svg_cache[icon_name] = renderer
                 return renderer
 
+        return None
+
+    def _get_pixmap(self, path: str) -> QPixmap | None:
+        """Carrega e cacheia um QPixmap a partir de um caminho de arquivo."""
+        if not path:
+            return None
+        if path in self._pixmap_cache:
+            return self._pixmap_cache[path]
+        pixmap = QPixmap(path)
+        if not pixmap.isNull():
+            self._pixmap_cache[path] = pixmap
+            return pixmap
         return None
 
     def _load_back_icon(self):

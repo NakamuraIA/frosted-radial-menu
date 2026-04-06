@@ -5,6 +5,8 @@ from .hotkey_bridge import HotkeyBridge
 from .action_handler import ActionHandler
 from .radial_widget import RadialWidget
 from .child_radial import ChildRadial
+from .radial_preview import RadialPreviewWidget
+from .settings_window import SettingsWindow
 from .menu_window import MenuWindow
 
 __all__ = [
@@ -15,5 +17,7 @@ __all__ = [
     "ActionHandler",
     "RadialWidget",
     "ChildRadial",
+    "RadialPreviewWidget",
+    "SettingsWindow",
     "MenuWindow",
 ]
