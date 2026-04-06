@@ -251,13 +251,29 @@ class RadialPreviewWidget(QWidget):
         p.setBrush(Qt.NoBrush)
         p.drawEllipse(QPointF(cx, cy), self.INNER_R - 2, self.INNER_R - 2)
 
-        # Ícone ← ou +
-        sym  = "←" if self._nav_stack else "+"
-        col2 = QColor(0, 220, 255, 230 if hov else 160)
-        p.setPen(col2)
-        fs   = 18 if sym == "+" else 14
-        p.setFont(QFont("Segoe UI", fs, QFont.Bold))
-        p.drawText(QRectF(cx - 20, cy - 14, 40, 28), Qt.AlignCenter, sym)
+        if self._nav_stack:
+            # Submenu: seta voltar (esq) + "+" verde (dir)
+            col_back = QColor(0, 220, 255, 230 if hov else 170)
+            p.setPen(col_back)
+            p.setFont(QFont("Segoe UI", 13, QFont.Bold))
+            p.drawText(QRectF(cx - 20, cy - 16, 40, 22), Qt.AlignCenter, "\u2190")
+
+            # Pequeno "+" verde canto inf-dir do circulo
+            p.setFont(QFont("Segoe UI", 9, QFont.Bold))
+            p.setPen(QColor(80, 255, 140, 230))
+            p.drawText(QRectF(cx + 12, cy + 2, 18, 16), Qt.AlignCenter, "+")
+
+            # Hint controls abaixo do circulo
+            p.setFont(QFont("Segoe UI", 6))
+            p.setPen(QColor(0, 220, 255, 80))
+            p.drawText(QRectF(cx - 45, cy + self.INNER_R + 2, 90, 12),
+                       Qt.AlignCenter, "\u25c4 voltar  |  dir: adicionar")
+        else:
+            # Root: so "+"
+            col2 = QColor(0, 220, 255, 230 if hov else 160)
+            p.setPen(col2)
+            p.setFont(QFont("Segoe UI", 18, QFont.Bold))
+            p.drawText(QRectF(cx - 20, cy - 14, 40, 28), Qt.AlignCenter, "+")
 
     def _draw_breadcrumb(self, p: QPainter):
         parts = [lbl for lbl, _ in self._nav_stack]
@@ -302,9 +318,9 @@ class RadialPreviewWidget(QWidget):
         if ev.button() == Qt.LeftButton:
             if dist < self.INNER_R:
                 if self._nav_stack:
-                    self._go_back()
+                    self._go_back()       # esq no centro em submenu = voltar
                 else:
-                    self._open_add()
+                    self._open_add()      # esq no centro em root = adicionar
                 return
             if self.INNER_R < dist < self.OUTER_R:
                 for i in range(count):
@@ -313,11 +329,17 @@ class RadialPreviewWidget(QWidget):
                         return
 
         elif ev.button() == Qt.RightButton:
+            if dist < self.INNER_R:
+                # Clique direito no centro = adicionar (em qualquer nivel)
+                self._open_add()
+                return
             if self.INNER_R < dist < self.OUTER_R:
                 for i in range(count):
                     if self._slice_path(i, count).contains(pos):
                         self._show_ctx(ev.globalPosition().toPoint(), i)
                         return
+            # Clique direito fora das fatias = menu p/ adicionar
+            self._show_empty_ctx(ev.globalPosition().toPoint())
 
     def leaveEvent(self, _ev):
         self._hovered   = -1
@@ -351,8 +373,7 @@ class RadialPreviewWidget(QWidget):
     # ── Ações ────────────────────────────────────────────────
 
     def _show_ctx(self, gpos, idx: int):
-        item = self._active[idx]
-        has_ch = bool(item.get("children"))
+        item   = self._active[idx]
         menu   = QMenu(self)
         menu.setStyleSheet("""
             QMenu {
@@ -363,18 +384,41 @@ class RadialPreviewWidget(QWidget):
             QMenu::item { padding: 6px 16px; border-radius: 6px; }
             QMenu::item:selected { background: rgba(0,220,255,0.15); }
         """)
-        a_edit   = menu.addAction("✏  Editar")
-        a_sub    = menu.addAction("↳  Ver / Editar Submenu") if True else None
+        a_add    = menu.addAction("\u2795  Adicionar item aqui")
         menu.addSeparator()
-        a_remove = menu.addAction("🗑  Remover")
+        a_edit   = menu.addAction("\u270f  Editar")
+        a_sub    = menu.addAction("\u21b3  Ver / Editar Submenu")
+        menu.addSeparator()
+        a_remove = menu.addAction("\U0001f5d1  Remover")
 
         chosen = menu.exec(gpos)
-        if chosen == a_edit:
+        if chosen == a_add:
+            self._open_add()
+        elif chosen == a_edit:
             self._open_edit(idx)
-        elif a_sub and chosen == a_sub:
+        elif chosen == a_sub:
             self._enter_submenu(idx)
         elif chosen == a_remove:
             self._confirm_remove(idx)
+
+    def _show_empty_ctx(self, gpos):
+        """Menu de contexto ao clicar com botao direito em area vazia do anel."""
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background: #161927; color: #e8eaf6;
+                border: 1px solid #2a2f45; border-radius: 8px;
+                padding: 4px;
+            }
+            QMenu::item { padding: 6px 16px; border-radius: 6px; }
+            QMenu::item:selected { background: rgba(0,220,255,0.15); }
+        """)
+        where = " ao Submenu" if self._nav_stack else ""
+        a_add = menu.addAction(f"\u2795  Adicionar item{where}")
+        chosen = menu.exec(gpos)
+        if chosen == a_add:
+            self._open_add()
+
 
     def _open_edit(self, idx: int):
         # Import inline para evitar dependência circular
