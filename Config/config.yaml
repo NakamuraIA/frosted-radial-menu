@@ -1,0 +1,52 @@
+menu:
+  label: Root
+  items:
+    - label: Explorer
+      icon: folder
+      action: run
+      target: explorer.exe
+      icon_mode: svg
+      icon_scale: 0.9
+    - label: Notepad
+      icon: file-text
+      action: run
+      target: notepad.exe
+      icon_mode: svg
+      icon_scale: 1.0
+    - label: Calc
+      icon: calculator
+      action: run
+      target: calc.exe
+      icon_mode: svg
+      icon_scale: 1.0
+    - label: CMD
+      icon: terminal
+      action: run
+      target: cmd.exe
+      icon_mode: svg
+      icon_scale: 1.0
+    - label: Google
+      icon: globe
+      action: url
+      target: https://www.google.com
+      icon_mode: svg
+      icon_scale: 1.0
+    - label: Clipboard
+      icon: clipboard
+      action: clipboard_history
+      target: ''
+      icon_mode: svg
+      icon_scale: 1.0
+
+settings:
+  inner_radius: 55
+  outer_radius: 155
+  max_items_per_level: 8
+  animation_duration_ms: 500
+  ghost_opacity: 0.3
+  accent_color: '#00DCFF'
+  secondary_accent_color: '#FF007A'
+  enable_monitoring: true
+  background_tint: 'rgba(0, 0, 0, 0.6)'
+  hotkey: mouse_middle
+  autostart: false

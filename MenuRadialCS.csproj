@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>MenuRadialCS</RootNamespace>
+    <AssemblyName>MenuRadialCS</AssemblyName>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="16.*" />
+  </ItemGroup>
+
+  <!-- SVG icons copied to output -->
+  <ItemGroup>
+    <Content Include="Assets\Icons\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Config\config.yaml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
