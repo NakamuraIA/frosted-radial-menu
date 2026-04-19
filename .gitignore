@@ -1,5 +1,7 @@
 bin/
 obj/
+publish/
+Installer/Output/
 *.user
 *.suo
 .vs/
