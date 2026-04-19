@@ -25,6 +25,7 @@ public class AppEditDialog : Window
     private readonly TextBox _targetEdit;
     private readonly TextBox _iconPathEdit;
     private readonly Slider _scaleSlider;
+    private DockPanel? _iconPathPanel;
     private string _currentAction = "run";
     private string _currentIconMode = "auto";
 
@@ -48,7 +49,8 @@ public class AppEditDialog : Window
         AllowsTransparency = true;
         Background = Brushes.Transparent;
         Width = 460;
-        Height = 510;
+        Height = 580;
+        SizeToContent = SizeToContent.Height;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         ResizeMode = ResizeMode.NoResize;
 
@@ -65,8 +67,6 @@ public class AppEditDialog : Window
             BorderBrush = Brush(BORDER), BorderThickness = new Thickness(1.5),
             Background = Brush(DARK_BG), Padding = new Thickness(20),
         };
-        _iconPathEdit = new TextBox { Text = ResultItem.CustomIcon }; // hidden, used in Save
-
         var stack = new StackPanel();
 
         // ── Header (icon + title + close) ──
@@ -235,7 +235,43 @@ public class AppEditDialog : Window
             iconPanel.Children.Add(btn);
         }
         stack.Children.Add(iconPanel);
-        stack.Children.Add(new Border { Height = 12 });
+        stack.Children.Add(new Border { Height = 8 });
+
+        // ── Custom icon path (visível só em Imagem/SVG) ──
+        _iconPathPanel = new DockPanel
+        {
+            Visibility = (_currentIconMode != "auto") ? Visibility.Visible : Visibility.Collapsed,
+            Margin = new Thickness(0, 0, 0, 12),
+        };
+        _iconPathEdit = new TextBox
+        {
+            Text = ResultItem.CustomIcon,
+            FontSize = 12,
+            Foreground = Brush(TEXT_PRIMARY),
+            Background = Brush(CARD_BG),
+            BorderBrush = Brush(BORDER),
+            BorderThickness = new Thickness(1),
+            Padding = new Thickness(10, 8, 10, 8),
+        };
+        var iconBrowseBtn = new Border
+        {
+            Width = 40, Height = 38,
+            CornerRadius = new CornerRadius(8),
+            Background = Brush(_accentHex),
+            Cursor = Cursors.Hand,
+            Margin = new Thickness(8, 0, 0, 0),
+            Child = new TextBlock
+            {
+                Text = "📁", FontSize = 16,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            },
+        };
+        iconBrowseBtn.MouseLeftButtonDown += (_, _) => BrowseIcon();
+        DockPanel.SetDock(iconBrowseBtn, Dock.Right);
+        _iconPathPanel.Children.Add(iconBrowseBtn);
+        _iconPathPanel.Children.Add(_iconPathEdit);
+        stack.Children.Add(_iconPathPanel);
 
         // ── Scale slider com +/- buttons ──
         var scaleHeader = new Grid();
@@ -434,6 +470,11 @@ public class AppEditDialog : Window
         _currentIconMode = _iconModes[idx];
         for (int i = 0; i < _iconButtons.Length; i++)
             UpdatePill(_iconButtons[i], i == idx);
+
+        // Mostrar campo de ícone só para custom/svg
+        if (_iconPathPanel != null)
+            _iconPathPanel.Visibility = (_currentIconMode != "auto")
+                ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void UpdatePill(Button btn, bool active)
