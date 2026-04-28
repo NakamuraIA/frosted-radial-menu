@@ -1,88 +1,113 @@
-# Menu Radial - Frosted Glass
+# Frosted Radial Menu
 
-A customizable radial productivity menu for Windows with recursive submenus, quick actions, and a frosted-glass UI.
+Launcher radial desktop para Windows feito com Tauri, React e TypeScript. O objetivo e ser leve, bonito, futurista, animado, configuravel e compilavel para `.exe`.
 
-Um menu radial para Windows feito com **PySide6**, com visual glassmorphism, atalho global e configuracao por JSON.
+O app nao depende de API externa. Em desenvolvimento, `npm run tauri dev` sobe o Vite e o backend Tauri juntos.
 
-O objetivo deste repositorio e ser facil de usar mesmo sem compilar: baixar, dar dois cliques no instalador e usar.
+## Recursos atuais
 
-## Preview
+- Menu radial transparente com efeito glass/neon.
+- Submenus externos que abrem na direcao da fatia clicada.
+- Centro com hora, CPU, RAM e campo de GPU.
+- Janela de configuracoes para editar botoes, icones, cores, tipo de acao, comandos e caminhos.
+- Personalizacao visual do radial: escala, raio interno/externo, largura, espaco entre fatias, tamanho dos icones, texto, fonte, glow, centro e submenus.
+- Configuracao persistida em JSON no diretorio de configuracao do usuario, fora do repositorio.
+- Backend Rust para:
+  - abrir arquivo, pasta, atalho, `.exe` ou URL;
+  - rodar comando em PowerShell ou CMD;
+  - abrir/esconder janelas;
+  - coletar CPU/RAM.
+- Tray icon com configuracoes e sair.
+- Hotkey global configuravel, com `Alt+Space` como padrao.
+- Auto-start opcional por tarefa agendada do usuario atual.
 
-![Menu radial principal](assets/screenshots/image_2.png)
+## Stack
 
-![Menu radial com submenu](assets/screenshots/image.png)
+- Frontend: React, TypeScript, Vite, lucide-react.
+- Desktop/backend: Tauri 2, Rust.
+- Sistema alvo: Windows.
 
-## O que ele faz
+## Estrutura
 
-- Abre um menu radial perto do cursor com `Alt + Espaco`
-- Executa programas, atalhos de teclado, pastas, scripts e URLs
-- Fica rodando na bandeja do sistema
-- Permite editar o menu pelo arquivo `config/config.json`
-- Tem suporte a submenu e visual animado
+- `src/`: interface React.
+- `src/components/RadialMenu.tsx`: menu principal.
+- `src/components/SettingsPanel.tsx`: painel de configuracao.
+- `src/lib/menuConfig.ts`: tipos e configuracao padrao.
+- `src-tauri/src/lib.rs`: comandos Rust, tray, hotkey, config e stats.
+- `src-tauri/tauri.conf.json`: configuracao do app Tauri.
+- `docs/PLAN.md`: plano de produto, distribuicao e portabilidade.
 
-## Instalacao Facil no Windows
+## Licenca
 
-1. Baixe este repositorio como ZIP e extraia a pasta.
-2. Instale o Python para Windows, caso ainda nao tenha.
-3. De dois cliques em `install_and_setup.bat`.
-4. Aguarde a instalacao terminar.
-5. Use o atalho `Menu Radial` criado na Area de Trabalho.
+MIT. Veja `LICENSE`.
 
-O instalador faz tudo isso automaticamente:
+## Desenvolvimento
 
-- cria um ambiente local em `.venv`
-- instala as dependencias
-- cria um atalho na Area de Trabalho
-- pode configurar inicio automatico com o Windows
-
-## Como usar
-
-1. Abra o Menu Radial pelo atalho da Area de Trabalho ou por `run_menu.bat`.
-2. O icone aparece na bandeja do sistema.
-3. Pressione `Alt + Espaco` para abrir o menu.
-4. Clique nas fatias para executar a acao desejada.
-5. Pressione `Esc` ou clique fora para fechar.
-
-## Configuracao
-
-O arquivo publico padrao e `config/config.json`.
-
-Se voce quiser manter uma configuracao pessoal sem subir no GitHub, crie `config/config.local.json`.
-Quando esse arquivo existir, ele tem prioridade sobre o `config/config.json`.
-
-### Exemplo rapido
-
-```json
-{
-  "menu": {
-    "items": [
-      {
-        "label": "Apps",
-        "icon": "layout-grid",
-        "children": [
-          { "label": "Terminal", "icon": "terminal", "action": "run", "target": "wt.exe" }
-        ]
-      }
-    ]
-  },
-  "settings": {
-    "hotkey": "<alt>+<space>",
-    "accent_color": "#00DCFF"
-  }
-}
+```bash
+npm install
+npm run tauri dev
 ```
 
-## Arquivos importantes
+O Vite usa `http://127.0.0.1:5180` em desenvolvimento. Se essa porta estiver ocupada, encerre o processo antigo antes de rodar o comando de novo:
 
-- `install_and_setup.bat`: instalador de um clique
-- `run_menu.bat`: inicializador visivel
-- `run_hidden.vbs`: inicializador silencioso
-- `setup_startup.bat`: ativa inicio automatico no Windows
-- `config/config.json`: menu publico padrao
-- `src/core/`: logica principal da interface e das acoes
+```powershell
+Get-NetTCPConnection -LocalPort 5180 -State Listen
+Stop-Process -Id <PID> -Force
+```
 
-## Observacoes
+Se o hotkey nao abrir o menu, normalmente existe outra instancia antiga do app segurando o atalho. Feche pelo tray icon ou encerre o processo antigo antes de rodar de novo.
 
-- Este projeto e focado em Windows.
-- O repositorio nao precisa ser compilado para funcionar.
-- Dependencias atuais: `PySide6`, `pynput` e `psutil`.
+## Validacao
+
+```bash
+npm run lint
+npm run build
+cd src-tauri
+cargo check
+```
+
+## Build para Windows
+
+```bash
+npm run tauri build
+```
+
+O projeto esta configurado para gerar instalador NSIS (`-setup.exe`) em:
+
+```text
+src-tauri/target/release/bundle/nsis/
+```
+
+O binario de release tambem sai com o nome do produto:
+
+```text
+src-tauri/target/release/Frosted Radial Menu.exe
+```
+
+O app final nao precisa de Node.js nem Rust no computador do usuario. Essas ferramentas sao usadas somente para desenvolvimento e build. No Windows, o runtime relevante e o Microsoft Edge WebView2; o instalador esta configurado com `downloadBootstrapper`, entao baixa/instala o WebView2 se ele estiver ausente.
+
+O instalador usa `installMode: currentUser`, instalando para o usuario atual sem exigir administrador. Esse modo combina melhor com `%LOCALAPPDATA%`/AppData e evita UAC no uso diario.
+
+Durante a instalacao, o NSIS copia o app para `%LOCALAPPDATA%\\Frosted Radial Menu`, cria o atalho do menu iniciar e cria automaticamente um atalho na Area de Trabalho apontando para o `.exe` instalado.
+
+Os artefatos `.exe` e `-setup.exe` nao devem ser commitados no Git. Publique esses arquivos em GitHub Releases.
+
+## Portabilidade
+
+Este projeto nao deve depender de caminhos do computador do desenvolvedor. Use caminhos configuraveis e variaveis do Windows, por exemplo:
+
+- `%USERPROFILE%\\Desktop`
+- `%USERPROFILE%\\Downloads`
+- `%APPDATA%`
+- `%LOCALAPPDATA%`
+
+As configuracoes reais do usuario ficam fora do repositorio. Configuracoes locais, presets pessoais, builds, screenshots de QA e caches estao no `.gitignore`.
+
+Arquivos importados/prototipos que nao participam do entrypoint real (`src/` + `src-tauri/src/lib.rs`) tambem ficam ignorados para evitar publicar lixo de prototipo no repo OSS.
+
+## Roadmap curto
+
+- Criar/remover atalho na Area de Trabalho pelo painel.
+- Importar/exportar presets.
+- Reordenar fatias e submenus no painel.
+- Detectar apps comuns do PC do usuario para montar um preset inicial local.
