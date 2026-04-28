@@ -1,63 +1,84 @@
-# Frosted Radial Menu
+<div align="center">
 
-Launcher radial desktop para Windows feito com Tauri, React e TypeScript. O objetivo e ser leve, bonito, futurista, animado, configuravel e compilavel para `.exe`.
+# 🌌 Frosted Radial Menu
 
-O app nao depende de API externa. Em desenvolvimento, `npm run tauri dev` sobe o Vite e o backend Tauri juntos.
+<img src="src-tauri/icons/Nakamura_Radial_ScHWpmtWXW.png" alt="Frosted Radial Menu Preview" width="500" style="border-radius: 12px; border: 1px solid #444; box-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 20px;" />
 
-## Recursos atuais
+**Launcher radial desktop para Windows, com design futurista e alta performance.**
 
-- Menu radial transparente com efeito glass/neon.
-- Submenus externos que abrem na direcao da fatia clicada.
-- Centro com hora, CPU, RAM e campo de GPU.
-- Janela de configuracoes para editar botoes, icones, cores, tipo de acao, comandos e caminhos.
-- Personalizacao visual do radial: escala, raio interno/externo, largura, espaco entre fatias, tamanho dos icones, texto, fonte, glow, centro e submenus.
-- Configuracao persistida em JSON no diretorio de configuracao do usuario, fora do repositorio.
-- Backend Rust para:
-  - abrir arquivo, pasta, atalho, `.exe` ou URL;
-  - rodar comando em PowerShell ou CMD;
-  - abrir/esconder janelas;
-  - coletar CPU/RAM.
-- Tray icon com configuracoes e sair.
-- Hotkey global configuravel, com `Alt+Space` como padrao.
-- Auto-start opcional por tarefa agendada do usuario atual.
+[![Tauri](https://img.shields.io/badge/Tauri-FFC131?style=for-the-badge&logo=Tauri&logoColor=white)](#)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](#)
+[![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)](#)
+[![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](#)
 
-## Stack
+*Leve, animado, customizável e compilável para `.exe` sem depender de APIs externas.*
 
-- Frontend: React, TypeScript, Vite, lucide-react.
-- Desktop/backend: Tauri 2, Rust.
-- Sistema alvo: Windows.
+</div>
 
-## Estrutura
+<hr/>
 
-- `src/`: interface React.
-- `src/components/RadialMenu.tsx`: menu principal.
-- `src/components/SettingsPanel.tsx`: painel de configuracao.
-- `src/lib/menuConfig.ts`: tipos e configuracao padrao.
-- `src-tauri/src/lib.rs`: comandos Rust, tray, hotkey, config e stats.
-- `src-tauri/tauri.conf.json`: configuracao do app Tauri.
-- `docs/PLAN.md`: plano de produto, distribuicao e portabilidade.
+## ✨ Recursos Principais
 
-## Licenca
+- 🔘 **Menu Radial Transparente**: Efeito *glass/neon* elegante.
+- 📂 **Submenus Inteligentes**: Abrem na direção exata da fatia clicada.
+- 📊 **Monitoramento em Tempo Real**: Centro exibe hora, CPU, RAM e GPU.
+- ⚙️ **Altamente Configurável**: Edite botões, ícones, cores, tipos de ação, comandos e atalhos pelo painel visual.
+- 🎨 **Personalização Visual Completa**: Ajuste escala, raio, largura, espaço, tamanhos, fontes, brilho (glow) e muito mais.
+- 💾 **Configuração Persistente**: Salva localmente em JSON no diretório do usuário, mantendo as configurações seguras.
+- 🦀 **Backend Poderoso em Rust**:
+  - Abre arquivos, pastas, atalhos, `.exe` e URLs.
+  - Executa comandos PowerShell ou CMD.
+  - Manipula e controla janelas (abrir/esconder).
+  - Coleta estatísticas de hardware em tempo real (CPU/RAM).
+- 🖱️ **System Tray**: Ícone prático na bandeja do sistema para acessar configurações ou sair.
+- ⌨️ **Hotkey Global**: Abre e fecha o menu rapidamente (`Alt+Space` configurado por padrão).
+- 🚀 **Auto-Start Opcional**: Inicialização junto com o Windows via Tarefa Agendada.
 
-MIT. Veja `LICENSE`.
+---
 
-## Desenvolvimento
+## 🛠️ Stack Tecnológico
+
+- **Frontend**: React, TypeScript, Vite, `lucide-react`.
+- **Backend / Desktop**: Tauri 2, Rust.
+- **Sistema Alvo**: Windows.
+
+---
+
+## 📂 Estrutura do Projeto
+
+- `src/`: Interface React.
+  - `src/components/RadialMenu.tsx`: Menu principal.
+  - `src/components/SettingsPanel.tsx`: Painel de configuração.
+  - `src/lib/menuConfig.ts`: Tipos e configuração padrão.
+- `src-tauri/src/lib.rs`: Comandos Rust (tray, hotkey, config, hardware stats).
+- `src-tauri/tauri.conf.json`: Configuração central do app Tauri.
+- `docs/PLAN.md`: Plano de produto, distribuição e portabilidade.
+
+---
+
+## 💻 Desenvolvimento
+
+Em ambiente de desenvolvimento, o comando abaixo sobe o Vite e o backend Tauri em conjunto:
 
 ```bash
 npm install
 npm run tauri dev
 ```
 
-O Vite usa `http://127.0.0.1:5180` em desenvolvimento. Se essa porta estiver ocupada, encerre o processo antigo antes de rodar o comando de novo:
+> **Nota:** O Vite utiliza a porta `http://127.0.0.1:5180`. Se a porta estiver ocupada, encerre o processo no PowerShell antes de tentar novamente:
+> ```powershell
+> Get-NetTCPConnection -LocalPort 5180 -State Listen
+> Stop-Process -Id <PID> -Force
+> ```
 
-```powershell
-Get-NetTCPConnection -LocalPort 5180 -State Listen
-Stop-Process -Id <PID> -Force
-```
+💡 **Dica:** Se o atalho global não estiver abrindo o menu, pode haver outra instância antiga rodando em segundo plano. Feche-a pelo ícone da bandeja ou encerre o processo antes de rodar o comando novamente.
 
-Se o hotkey nao abrir o menu, normalmente existe outra instancia antiga do app segurando o atalho. Feche pelo tray icon ou encerre o processo antigo antes de rodar de novo.
+---
 
-## Validacao
+## ✅ Validação
+
+Comandos úteis para manter a qualidade do código:
 
 ```bash
 npm run lint
@@ -66,48 +87,56 @@ cd src-tauri
 cargo check
 ```
 
-## Build para Windows
+---
+
+## 📦 Build para Windows
 
 ```bash
 npm run tauri build
 ```
 
-O projeto esta configurado para gerar instalador NSIS (`-setup.exe`) em:
+Os artefatos gerados ficarão nos seguintes diretórios:
+- **Instalador NSIS:** `src-tauri/target/release/bundle/nsis/` (arquivo `-setup.exe`)
+- **Binário Direto:** `src-tauri/target/release/Frosted Radial Menu.exe`
 
-```text
-src-tauri/target/release/bundle/nsis/
-```
+### ℹ️ Detalhes da Instalação
+O app **não** precisa de Node.js ou Rust no computador do usuário final. Essas ferramentas são usadas apenas para desenvolvimento e compilação.
+- O runtime utilizado é o **Microsoft Edge WebView2**. O instalador utiliza a diretiva `downloadBootstrapper` para baixar e instalar o WebView2 caso ele não exista na máquina.
+- A instalação utiliza `installMode: currentUser`, instalando apenas para o usuário atual e evitando pedidos de permissão de administrador (UAC).
+- O NSIS copia o app para `%LOCALAPPDATA%\Frosted Radial Menu` e cria atalhos no **Menu Iniciar** e na **Área de Trabalho**.
 
-O binario de release tambem sai com o nome do produto:
+> ⚠️ Os executáveis (`.exe`) não devem ser commitados no repositório. O ideal é publicá-los nas **Releases do GitHub**.
 
-```text
-src-tauri/target/release/Frosted Radial Menu.exe
-```
+---
 
-O app final nao precisa de Node.js nem Rust no computador do usuario. Essas ferramentas sao usadas somente para desenvolvimento e build. No Windows, o runtime relevante e o Microsoft Edge WebView2; o instalador esta configurado com `downloadBootstrapper`, entao baixa/instala o WebView2 se ele estiver ausente.
+## 🌍 Portabilidade
 
-O instalador usa `installMode: currentUser`, instalando para o usuario atual sem exigir administrador. Esse modo combina melhor com `%LOCALAPPDATA%`/AppData e evita UAC no uso diario.
+Este projeto foi desenhado para **não** depender de caminhos específicos do computador do desenvolvedor. Utilize variáveis de ambiente do Windows nas configurações para garantir que funcione em qualquer máquina:
 
-Durante a instalacao, o NSIS copia o app para `%LOCALAPPDATA%\\Frosted Radial Menu`, cria o atalho do menu iniciar e cria automaticamente um atalho na Area de Trabalho apontando para o `.exe` instalado.
-
-Os artefatos `.exe` e `-setup.exe` nao devem ser commitados no Git. Publique esses arquivos em GitHub Releases.
-
-## Portabilidade
-
-Este projeto nao deve depender de caminhos do computador do desenvolvedor. Use caminhos configuraveis e variaveis do Windows, por exemplo:
-
-- `%USERPROFILE%\\Desktop`
-- `%USERPROFILE%\\Downloads`
+- `%USERPROFILE%\Desktop`
+- `%USERPROFILE%\Downloads`
 - `%APPDATA%`
 - `%LOCALAPPDATA%`
 
-As configuracoes reais do usuario ficam fora do repositorio. Configuracoes locais, presets pessoais, builds, screenshots de QA e caches estao no `.gitignore`.
+As configurações reais do usuário ficam fora do repositório. Arquivos locais, presets pessoais, builds, screenshots de QA e caches estão ignorados no `.gitignore`.
 
-Arquivos importados/prototipos que nao participam do entrypoint real (`src/` + `src-tauri/src/lib.rs`) tambem ficam ignorados para evitar publicar lixo de prototipo no repo OSS.
+---
 
-## Roadmap curto
+## 🗺️ Roadmap
 
-- Criar/remover atalho na Area de Trabalho pelo painel.
-- Importar/exportar presets.
-- Reordenar fatias e submenus no painel.
-- Detectar apps comuns do PC do usuario para montar um preset inicial local.
+- [ ] Criar/remover atalho na Área de Trabalho pelo painel de configurações.
+- [ ] Importar e exportar presets de personalização.
+- [ ] Reordenar fatias e submenus diretamente no painel.
+- [ ] Detectar aplicativos comuns do PC do usuário para montar um preset inicial automatizado.
+
+---
+
+## 📄 Licença
+
+**MIT**. Veja o arquivo `LICENSE` para mais detalhes.
+
+<br/>
+
+<div align="center">
+  <img src="https://count.getloli.com/get/@Rukafuu?theme=booru-lewd" alt="Moe Counter" />
+</div>
