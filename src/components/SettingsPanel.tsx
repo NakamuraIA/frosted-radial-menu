@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import {
@@ -26,6 +26,7 @@ import {
   type ShellType,
 } from '../lib/menuConfig';
 import { getIconComponent } from '../lib/iconRegistry';
+import { resolveCustomIconSrc } from '../lib/iconSource';
 import './SettingsPanel.css';
 
 function createId(prefix: string) {
@@ -77,6 +78,78 @@ function removeItem(items: MenuItemConfig[], itemId: string): MenuItemConfig[] {
       ...item,
       children: item.children ? removeItem(item.children, itemId) : item.children,
     }));
+}
+
+function containsItem(item: MenuItemConfig, targetId: string): boolean {
+  return Boolean(item.children?.some((child) => child.id === targetId || containsItem(child, targetId)));
+}
+
+function extractItem(
+  items: MenuItemConfig[],
+  itemId: string,
+): { items: MenuItemConfig[]; extracted: MenuItemConfig | null } {
+  let extracted: MenuItemConfig | null = null;
+  const nextItems: MenuItemConfig[] = [];
+
+  for (const item of items) {
+    if (item.id === itemId) {
+      extracted = item;
+      continue;
+    }
+
+    if (item.children?.length) {
+      const result = extractItem(item.children, itemId);
+      if (result.extracted) {
+        extracted = result.extracted;
+        nextItems.push({ ...item, children: result.items });
+        continue;
+      }
+    }
+
+    nextItems.push(item);
+  }
+
+  return { items: nextItems, extracted };
+}
+
+function insertBeforeItem(
+  items: MenuItemConfig[],
+  targetId: string,
+  itemToInsert: MenuItemConfig,
+): { items: MenuItemConfig[]; inserted: boolean } {
+  const nextItems: MenuItemConfig[] = [];
+
+  for (const item of items) {
+    if (item.id === targetId) {
+      nextItems.push(itemToInsert, item);
+      return { items: [...nextItems, ...items.slice(nextItems.length - 1)], inserted: true };
+    }
+
+    if (item.children?.length) {
+      const result = insertBeforeItem(item.children, targetId, itemToInsert);
+      if (result.inserted) {
+        nextItems.push({ ...item, children: result.items });
+        const currentIndex = items.indexOf(item);
+        return { items: [...nextItems, ...items.slice(currentIndex + 1)], inserted: true };
+      }
+    }
+
+    nextItems.push(item);
+  }
+
+  return { items, inserted: false };
+}
+
+function moveItemBefore(items: MenuItemConfig[], sourceId: string, targetId: string): MenuItemConfig[] {
+  if (sourceId === targetId) return items;
+  const source = findMenuItem(items, sourceId);
+  if (!source || containsItem(source, targetId)) return items;
+
+  const extracted = extractItem(items, sourceId);
+  if (!extracted.extracted) return items;
+
+  const inserted = insertBeforeItem(extracted.items, targetId, extracted.extracted);
+  return inserted.inserted ? inserted.items : items;
 }
 
 function insertChild(items: MenuItemConfig[], parentId: string, child: MenuItemConfig): MenuItemConfig[] {
@@ -133,10 +206,26 @@ function RangeField({ label, value, min, max, step, unit = '', onChange }: Range
   );
 }
 
+interface CustomIconProps {
+  src: string;
+  fallback: ReactNode;
+}
+
+function CustomIcon({ src, fallback }: CustomIconProps) {
+  const [failedSrc, setFailedSrc] = useState('');
+
+  if (!src || failedSrc === src) {
+    return <>{fallback}</>;
+  }
+
+  return <img src={src} alt="" onError={() => setFailedSrc(src)} />;
+}
+
 export function SettingsPanel() {
   const [config, setConfig] = useState<RadialConfig>(() => normalizeRadialConfig(FALLBACK_CONFIG));
   const [selectedId, setSelectedId] = useState<string>(FALLBACK_CONFIG.items[0]?.id ?? '');
   const [status, setStatus] = useState('Carregando configuracao...');
+  const [draggedId, setDraggedId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -259,6 +348,17 @@ export function SettingsPanel() {
     setStatus('Reset local');
   };
 
+  const handleDropOnItem = (targetId: string) => {
+    if (!draggedId || draggedId === targetId) return;
+    setConfig((current) => ({
+      ...current,
+      items: moveItemBefore(current.items, draggedId, targetId),
+    }));
+    setSelectedId(draggedId);
+    setDraggedId(null);
+    setStatus('Ordem alterada');
+  };
+
   const closeWindow = () => {
     void invoke('hide_settings_window').catch(() => getCurrentWindow().hide());
   };
@@ -294,17 +394,34 @@ export function SettingsPanel() {
           </div>
 
           <div className="items-list">
-            {flatItems.map(({ item, path }) => {
+            {flatItems.map(({ item, path, depth }) => {
               const Icon = getIconComponent(item.icon);
+              const customIconSrc = resolveCustomIconSrc(item.customIcon);
               return (
                 <button
                   key={item.id}
                   type="button"
-                  className={`item-row ${selectedId === item.id ? 'is-selected' : ''}`}
+                  draggable
+                  className={`item-row ${selectedId === item.id ? 'is-selected' : ''} ${draggedId === item.id ? 'is-dragging' : ''}`}
                   onClick={() => setSelectedId(item.id)}
+                  onDragStart={(event) => {
+                    setDraggedId(item.id);
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', item.id);
+                  }}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    handleDropOnItem(item.id);
+                  }}
+                  onDragEnd={() => setDraggedId(null)}
                   style={{ '--item-color': item.color } as CSSProperties}
                 >
-                  <Icon size={18} />
+                  <span className="item-indent" style={{ width: `${depth * 14}px` }} />
+                  <CustomIcon src={customIconSrc} fallback={<Icon size={20} />} />
                   <span>{path}</span>
                   {item.children?.length ? <b>{item.children.length}</b> : null}
                 </button>
@@ -370,7 +487,7 @@ export function SettingsPanel() {
                   Icone customizado
                   <input
                     value={selectedItem.customIcon ?? ''}
-                    placeholder="/icons/meu-icone.png ou https://..."
+                    placeholder="C:\\Users\\...\\logo.ico, .png ou https://..."
                     onChange={(event) => patchSelected({ customIcon: event.target.value })}
                   />
                 </label>
@@ -445,11 +562,8 @@ export function SettingsPanel() {
                 <div className="preview-button" style={{ '--preview-color': selectedItem.color } as CSSProperties}>
                   {(() => {
                     const Icon = getIconComponent(selectedItem.icon);
-                    return selectedItem.customIcon ? (
-                      <img src={selectedItem.customIcon} alt="" />
-                    ) : (
-                      <Icon size={28} />
-                    );
+                    const customIconSrc = resolveCustomIconSrc(selectedItem.customIcon);
+                    return <CustomIcon src={customIconSrc} fallback={<Icon size={28} />} />;
                   })()}
                   <span>{selectedItem.label}</span>
                 </div>
@@ -542,8 +656,8 @@ export function SettingsPanel() {
             <RangeField
               label="Escala geral"
               value={layout.menuScale}
-              min={0.72}
-              max={1.1}
+              min={0.45}
+              max={1.3}
               step={0.01}
               unit="x"
               onChange={(value) => patchLayout({ menuScale: value })}
@@ -555,8 +669,8 @@ export function SettingsPanel() {
             <RangeField
               label="Raio interno"
               value={layout.mainInnerRadius}
-              min={126}
-              max={190}
+              min={88}
+              max={220}
               step={1}
               unit="px"
               onChange={(value) => patchLayout({ mainInnerRadius: value })}
@@ -564,8 +678,8 @@ export function SettingsPanel() {
             <RangeField
               label="Raio externo"
               value={layout.mainOuterRadius}
-              min={230}
-              max={328}
+              min={170}
+              max={390}
               step={1}
               unit="px"
               onChange={(value) => patchLayout({ mainOuterRadius: value })}
@@ -592,7 +706,7 @@ export function SettingsPanel() {
               label="Icone"
               value={layout.mainIconSize}
               min={24}
-              max={48}
+              max={72}
               step={1}
               unit="px"
               onChange={(value) => patchLayout({ mainIconSize: value })}
@@ -600,8 +714,8 @@ export function SettingsPanel() {
             <RangeField
               label="Texto"
               value={layout.mainLabelSize}
-              min={10}
-              max={17}
+              min={9}
+              max={22}
               step={1}
               unit="px"
               onChange={(value) => patchLayout({ mainLabelSize: value })}
@@ -613,8 +727,8 @@ export function SettingsPanel() {
             <RangeField
               label="Distancia"
               value={layout.submenuInnerRadius}
-              min={296}
-              max={370}
+              min={210}
+              max={450}
               step={1}
               unit="px"
               onChange={(value) => patchLayout({ submenuInnerRadius: value })}
@@ -622,8 +736,8 @@ export function SettingsPanel() {
             <RangeField
               label="Largura"
               value={layout.submenuOuterRadius}
-              min={348}
-              max={408}
+              min={260}
+              max={510}
               step={1}
               unit="px"
               onChange={(value) => patchLayout({ submenuOuterRadius: value })}
@@ -640,8 +754,8 @@ export function SettingsPanel() {
             <RangeField
               label="Abertura"
               value={layout.submenuSpread}
-              min={28}
-              max={56}
+              min={20}
+              max={72}
               step={1}
               unit="deg"
               onChange={(value) => patchLayout({ submenuSpread: value })}
@@ -649,8 +763,8 @@ export function SettingsPanel() {
             <RangeField
               label="Icone filho"
               value={layout.submenuIconSize}
-              min={28}
-              max={56}
+              min={24}
+              max={76}
               step={1}
               unit="px"
               onChange={(value) => patchLayout({ submenuIconSize: value })}
@@ -658,8 +772,8 @@ export function SettingsPanel() {
             <RangeField
               label="Texto filho"
               value={layout.submenuLabelSize}
-              min={9}
-              max={16}
+              min={8}
+              max={22}
               step={1}
               unit="px"
               onChange={(value) => patchLayout({ submenuLabelSize: value })}
@@ -671,8 +785,8 @@ export function SettingsPanel() {
             <RangeField
               label="Centro"
               value={layout.centerSize}
-              min={188}
-              max={284}
+              min={148}
+              max={320}
               step={1}
               unit="px"
               onChange={(value) => patchLayout({ centerSize: value })}
@@ -693,6 +807,15 @@ export function SettingsPanel() {
                 onChange={(event) => patchPreferences({ showPercentages: event.target.checked })}
               />
               Mostrar percentuais
+            </label>
+
+            <label className="toggle-row">
+              <input
+                type="checkbox"
+                checked={config.preferences.runCommandsAsAdmin}
+                onChange={(event) => patchPreferences({ runCommandsAsAdmin: event.target.checked })}
+              />
+              Rodar comandos como administrador
             </label>
 
             <label className="toggle-row">

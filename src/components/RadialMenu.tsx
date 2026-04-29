@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -15,6 +15,7 @@ import {
   type SystemStats,
 } from '../lib/menuConfig';
 import { getIconComponent } from '../lib/iconRegistry';
+import { resolveCustomIconSrc } from '../lib/iconSource';
 import './RadialMenu.css';
 
 const SIZE = 840;
@@ -98,19 +99,31 @@ function renderSliceContent(
         } as CSSProperties
       }
     >
-      {item.customIcon ? (
-        <img className="slice-custom-icon" src={item.customIcon} alt="" />
-      ) : (
-        <Icon size={iconSize} strokeWidth={2.15} />
-      )}
+      <CustomIcon
+        className="slice-custom-icon"
+        src={resolveCustomIconSrc(item.customIcon)}
+        fallback={<Icon size={iconSize} strokeWidth={2.15} />}
+      />
       <span>{item.label}</span>
       <i style={{ opacity: isHovered ? 1 : 0 }} />
     </div>
   );
 }
 
-function statLabel(value: number | null) {
-  return typeof value === 'number' ? `${clampPercent(value)}%` : 'N/D';
+interface CustomIconProps {
+  className?: string;
+  src: string;
+  fallback: ReactNode;
+}
+
+function CustomIcon({ className, src, fallback }: CustomIconProps) {
+  const [failedSrc, setFailedSrc] = useState('');
+
+  if (!src || failedSrc === src) {
+    return <>{fallback}</>;
+  }
+
+  return <img className={className} src={src} alt="" onError={() => setFailedSrc(src)} />;
 }
 
 function getPreviewActiveParentId() {
@@ -439,20 +452,7 @@ export function RadialMenu() {
         <span className="center-time">{timeText}</span>
         <span className="center-date">{dateText}</span>
         {config.preferences.showPercentages ? <strong>{focusPercent}%</strong> : null}
-        <div className="center-metrics" aria-label="Uso do sistema">
-          <span>
-            <b>CPU</b>
-            <em>{config.preferences.showPercentages ? statLabel(stats.cpu) : 'ON'}</em>
-          </span>
-          <span>
-            <b>RAM</b>
-            <em>{config.preferences.showPercentages ? statLabel(stats.ram) : 'ON'}</em>
-          </span>
-          <span>
-            <b>GPU</b>
-            <em>{config.preferences.showPercentages ? statLabel(stats.gpu) : 'N/D'}</em>
-          </span>
-        </div>
+        <span className="center-focus-label">CPU</span>
       </button>
 
     </div>

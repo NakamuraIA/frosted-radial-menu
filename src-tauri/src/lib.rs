@@ -72,6 +72,8 @@ struct AppPreferences {
     autostart_enabled: bool,
     hide_after_action: bool,
     show_percentages: bool,
+    #[serde(default = "default_true")]
+    run_commands_as_admin: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -118,6 +120,10 @@ fn default_layout_config() -> LayoutConfig {
     }
 }
 
+fn default_true() -> bool {
+    true
+}
+
 fn default_config() -> RadialConfig {
     RadialConfig {
         version: 1,
@@ -135,6 +141,7 @@ fn default_config() -> RadialConfig {
             autostart_enabled: false,
             hide_after_action: true,
             show_percentages: true,
+            run_commands_as_admin: true,
         },
         items: vec![
             MenuItemConfig {
@@ -386,6 +393,14 @@ fn default_config() -> RadialConfig {
 }
 
 fn config_path(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|error| error.to_string())?;
+    Ok(dir.join("config.json"))
+}
+
+fn legacy_config_path(app: &AppHandle) -> Result<PathBuf, String> {
     let dir = app.path().app_config_dir().map_err(|error| error.to_string())?;
     Ok(dir.join("config.json"))
 }
@@ -402,6 +417,17 @@ fn write_config(app: &AppHandle, config: &RadialConfig) -> Result<(), String> {
 
 fn read_config(app: &AppHandle) -> Result<RadialConfig, String> {
     let path = config_path(app)?;
+    if !path.exists() {
+        if let Ok(legacy_path) = legacy_config_path(app) {
+            if legacy_path.exists() {
+                if let Some(parent) = path.parent() {
+                    fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+                }
+                fs::copy(&legacy_path, &path).map_err(|error| error.to_string())?;
+            }
+        }
+    }
+
     if !path.exists() {
         let config = default_config();
         write_config(app, &config)?;
@@ -443,7 +469,11 @@ fn open_target(value: Option<&str>) -> Result<(), String> {
     open::that(expand_env_vars(target)).map_err(|error| error.to_string())
 }
 
-fn run_shell_action(action: &MenuItemConfig) -> Result<(), String> {
+fn ps_single_quote(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "''"))
+}
+
+fn run_shell_action(action: &MenuItemConfig, run_as_admin: bool) -> Result<(), String> {
     let command_line = action
         .value
         .as_deref()
@@ -453,33 +483,61 @@ fn run_shell_action(action: &MenuItemConfig) -> Result<(), String> {
 
     let command_line = expand_env_vars(command_line);
     let shell = action.shell.as_deref().unwrap_or("powershell");
-    let mut command = Command::new("cmd");
-
-    if shell.eq_ignore_ascii_case("cmd") {
-        command.args(["/C", "start", "Radial", "cmd", "/K", &command_line]);
-    } else {
-        command.args([
-            "/C",
-            "start",
-            "Radial",
-            "powershell",
-            "-NoExit",
-            "-NoProfile",
-            "-ExecutionPolicy",
-            "Bypass",
-            "-Command",
-            &command_line,
-        ]);
-    }
-
-    if let Some(working_dir) = action
+    let working_dir = if let Some(working_dir) = action
         .working_dir
         .as_deref()
         .map(str::trim)
         .filter(|value| !value.is_empty())
     {
-        command.current_dir(expand_env_vars(working_dir));
+        Some(expand_env_vars(working_dir))
+    } else {
+        None
+    };
+
+    let (program, args) = if shell.eq_ignore_ascii_case("cmd") {
+        ("cmd.exe", vec!["/K".to_string(), command_line])
+    } else {
+        (
+            "powershell.exe",
+            vec![
+                "-NoExit".to_string(),
+                "-NoProfile".to_string(),
+                "-ExecutionPolicy".to_string(),
+                "Bypass".to_string(),
+                "-Command".to_string(),
+                command_line,
+            ],
+        )
+    };
+
+    let argument_list = args
+        .iter()
+        .map(|arg| ps_single_quote(arg))
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    let mut script = format!(
+        "Start-Process -FilePath {} -ArgumentList @({})",
+        ps_single_quote(program),
+        argument_list
+    );
+
+    if let Some(working_dir) = working_dir {
+        script.push_str(&format!(" -WorkingDirectory {}", ps_single_quote(&working_dir)));
     }
+
+    if run_as_admin {
+        script.push_str(" -Verb RunAs");
+    }
+
+    let mut command = Command::new("powershell.exe");
+    command.args([
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        &script,
+    ]);
 
     command
         .stdin(Stdio::null())
@@ -714,7 +772,7 @@ fn run_menu_action(app: AppHandle, action_id: String) -> Result<(), String> {
 
     match action.action_type.as_str() {
         "openPath" | "openUrl" => open_target(action.value.as_deref()),
-        "runCommand" => run_shell_action(&action),
+        "runCommand" => run_shell_action(&action, config.preferences.run_commands_as_admin),
         "settings" => open_settings_window_inner(&app),
         "submenu" | "none" => Ok(()),
         other => Err(format!("Tipo de acao desconhecido: {}", other)),

@@ -54,6 +54,7 @@ export interface AppPreferences {
   autostartEnabled: boolean;
   hideAfterAction: boolean;
   showPercentages: boolean;
+  runCommandsAsAdmin: boolean;
 }
 
 export interface RadialConfig {
@@ -155,6 +156,7 @@ export const FALLBACK_CONFIG: RadialConfig = {
     autostartEnabled: false,
     hideAfterAction: true,
     showPercentages: true,
+    runCommandsAsAdmin: true,
   },
   items: [
     {
@@ -334,46 +336,46 @@ function clampNumber(value: number | null | undefined, min: number, max: number,
 
 export function normalizeLayoutConfig(layout?: Partial<LayoutConfig> | null): LayoutConfig {
   const source = { ...DEFAULT_LAYOUT, ...(layout ?? {}) };
-  const centerSize = clampNumber(source.centerSize, 188, 284, DEFAULT_LAYOUT.centerSize);
+  const centerSize = clampNumber(source.centerSize, 148, 320, DEFAULT_LAYOUT.centerSize);
   const centerRadius = centerSize / 2;
   const mainInnerRadius = clampNumber(
     source.mainInnerRadius,
-    centerRadius + 18,
-    190,
+    centerRadius + 12,
+    220,
     DEFAULT_LAYOUT.mainInnerRadius,
   );
   const mainOuterRadius = clampNumber(
     source.mainOuterRadius,
-    mainInnerRadius + 72,
-    328,
+    mainInnerRadius + 58,
+    390,
     DEFAULT_LAYOUT.mainOuterRadius,
   );
   const submenuInnerRadius = clampNumber(
     source.submenuInnerRadius,
     mainOuterRadius + 10,
-    370,
+    450,
     DEFAULT_LAYOUT.submenuInnerRadius,
   );
   const submenuOuterRadius = clampNumber(
     source.submenuOuterRadius,
-    submenuInnerRadius + 48,
-    408,
+    submenuInnerRadius + 42,
+    510,
     DEFAULT_LAYOUT.submenuOuterRadius,
   );
 
   return {
-    menuScale: clampNumber(source.menuScale, 0.72, 1.1, DEFAULT_LAYOUT.menuScale),
+    menuScale: clampNumber(source.menuScale, 0.45, 1.3, DEFAULT_LAYOUT.menuScale),
     mainInnerRadius,
     mainOuterRadius,
     mainGap: clampNumber(source.mainGap, 0, 10, DEFAULT_LAYOUT.mainGap),
-    mainIconSize: clampNumber(source.mainIconSize, 24, 48, DEFAULT_LAYOUT.mainIconSize),
-    mainLabelSize: clampNumber(source.mainLabelSize, 10, 17, DEFAULT_LAYOUT.mainLabelSize),
+    mainIconSize: clampNumber(source.mainIconSize, 24, 72, DEFAULT_LAYOUT.mainIconSize),
+    mainLabelSize: clampNumber(source.mainLabelSize, 9, 22, DEFAULT_LAYOUT.mainLabelSize),
     submenuInnerRadius,
     submenuOuterRadius,
     submenuGap: clampNumber(source.submenuGap, 0, 8, DEFAULT_LAYOUT.submenuGap),
-    submenuIconSize: clampNumber(source.submenuIconSize, 28, 56, DEFAULT_LAYOUT.submenuIconSize),
-    submenuLabelSize: clampNumber(source.submenuLabelSize, 9, 16, DEFAULT_LAYOUT.submenuLabelSize),
-    submenuSpread: clampNumber(source.submenuSpread, 28, 56, DEFAULT_LAYOUT.submenuSpread),
+    submenuIconSize: clampNumber(source.submenuIconSize, 24, 76, DEFAULT_LAYOUT.submenuIconSize),
+    submenuLabelSize: clampNumber(source.submenuLabelSize, 8, 22, DEFAULT_LAYOUT.submenuLabelSize),
+    submenuSpread: clampNumber(source.submenuSpread, 20, 72, DEFAULT_LAYOUT.submenuSpread),
     centerSize,
     borderWidth: clampNumber(source.borderWidth, 0.8, 3.4, DEFAULT_LAYOUT.borderWidth),
     glowIntensity: clampNumber(source.glowIntensity, 0.35, 1.85, DEFAULT_LAYOUT.glowIntensity),
@@ -422,18 +424,22 @@ export function findMenuItem(items: MenuItemConfig[], id: string | null): MenuIt
 export interface FlattenedMenuItem {
   item: MenuItemConfig;
   path: string;
+  depth: number;
+  parentId: string | null;
 }
 
 export function flattenMenuItems(
   items: MenuItemConfig[],
   parentLabel = '',
+  depth = 0,
+  parentId: string | null = null,
 ): FlattenedMenuItem[] {
   const result: FlattenedMenuItem[] = [];
 
   items.forEach((item) => {
     const path = parentLabel ? `${parentLabel} / ${item.label}` : item.label;
-    result.push({ item, path });
-    result.push(...flattenMenuItems(item.children ?? [], path));
+    result.push({ item, path, depth, parentId });
+    result.push(...flattenMenuItems(item.children ?? [], path, depth + 1, item.id));
   });
 
   return result;

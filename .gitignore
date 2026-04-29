@@ -9,6 +9,7 @@ dist-ssr/
 
 # Rust/Tauri build output
 src-tauri/target/
+src-tauri/target-codex/
 src-tauri/gen/schemas/
 src-tauri/.tauri/
 

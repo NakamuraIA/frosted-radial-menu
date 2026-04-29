@@ -15,8 +15,8 @@
       {
         "label": "main",
         "title": "Radial Menu",
-        "width": 840,
-        "height": 840,
+        "width": 1080,
+        "height": 1080,
         "resizable": false,
         "fullscreen": false,
         "transparent": true,
@@ -42,7 +42,18 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "$HOME/**",
+          "$PICTURE/**",
+          "$DOCUMENT/**",
+          "$DESKTOP/**",
+          "$DOWNLOAD/**",
+          "$APPLOCALDATA/**"
+        ]
+      }
     }
   },
   "bundle": {

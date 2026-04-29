@@ -193,16 +193,28 @@ button {
   background: rgba(255, 255, 255, 0.045);
   color: rgba(255, 255, 255, 0.72);
   display: grid;
-  grid-template-columns: 20px 1fr auto;
+  grid-template-columns: auto 26px 1fr auto;
   align-items: center;
   gap: 10px;
   text-align: left;
   cursor: pointer;
 }
 
-.item-row svg {
+.item-row svg,
+.item-row img {
   color: var(--item-color);
   filter: drop-shadow(0 0 8px color-mix(in srgb, var(--item-color) 45%, transparent));
+}
+
+.item-row img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.item-indent {
+  display: block;
+  height: 1px;
 }
 
 .item-row span {
@@ -227,6 +239,11 @@ button {
   border-color: color-mix(in srgb, var(--item-color) 70%, rgba(255, 255, 255, 0.16));
   background: color-mix(in srgb, var(--item-color) 16%, rgba(255, 255, 255, 0.045));
   color: #fff;
+}
+
+.item-row.is-dragging {
+  opacity: 0.5;
+  transform: scale(0.985);
 }
 
 .item-tools button {
@@ -358,10 +375,12 @@ input[type='range'] {
 }
 
 .preview-button img {
-  width: 30px;
-  height: 30px;
+  width: 46px;
+  height: 46px;
   object-fit: contain;
-  filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.22));
+  filter:
+    drop-shadow(0 0 10px color-mix(in srgb, var(--preview-color) 42%, transparent))
+    drop-shadow(0 5px 10px rgba(0, 0, 0, 0.45));
 }
 
 .preview-strip p {

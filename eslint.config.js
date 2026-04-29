@@ -9,6 +9,7 @@ export default defineConfig([
   globalIgnores([
     'dist',
     'src-tauri/target',
+    'src-tauri/target-codex',
     'src-tauri/gen',
     'src-tauri/src/app',
     'src-tauri/src/imports',
