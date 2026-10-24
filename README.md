@@ -49,13 +49,14 @@
 
 **Frontend** (`src/`)
 
-- `components/radial/`: menu — `RadialMenu` (container), `RadialCanvas`, `MainSlice`, `SubmenuSlices`, `CenterDashboard`, `SliceContent` e `geometry.ts`.
-- `components/settings/`: painel — `SettingsPanel` (container), `ItemsPanel`, `ActionEditor`, `AppearancePanel`, `SettingsHeader`, `RangeField`.
+- `components/radial/`: menu — `RadialMenu` (container), `RadialCanvas`, `MainSlice`, `SubmenuSlices`, `CenterDashboard`, `SliceContent`, `geometry.ts` e `themeVars.ts`.
+- `components/settings/`: janela de configurações — `SettingsShell` (topbar + navegação + rascunho) e `pages/` com Geral, Aparência, Menu radial, Ações, Submenus, Atalhos, Integrações e Sobre; `MenuPreview` para a prévia ao vivo.
+- `components/ui/`: primitivas reutilizáveis — `Button`, `Card`, `Field`, `Slider`, `Switch`, `Badge`, `ConfirmDialog`, `PageHeader`.
 - `components/common/`: `CustomIcon` e `renderIcon` compartilhados.
-- `hooks/`: `useRadialConfig`, `useSystemStats`, `useClock`, `useMenuVisibility`.
+- `hooks/`: `useRadialConfig`, `useSystemStats`, `useClock`, `useMenuVisibility`, `useSettingsDraft`.
 - `lib/config/`: tipos, opções, defaults, normalização e operações de árvore.
 - `lib/`: `api.ts` (wrapper tipado do `invoke`), `icons/`, `format.ts`, `id.ts`.
-- `styles/`: CSS global (`index.css`) e do app (`app.css`).
+- `styles/`: `tokens.css` (design tokens), `index.css` e `app.css`.
 
 **Backend** (`src-tauri/src/`)
 

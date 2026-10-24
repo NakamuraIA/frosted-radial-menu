@@ -32,16 +32,19 @@ Versão do app é **1.0.0** em `package.json`, `src-tauri/Cargo.toml` e
 
 **Frontend (`src/`)**
 
-- `App.tsx`: roteia a janela pelo label (`?window=settings` serve para preview).
+- `App.tsx`: roteia a janela pelo label (`?window=settings&page=<id>` serve para QA/preview).
 - `components/radial/`: `RadialMenu` (container) + `RadialCanvas`, `MainSlice`, `SubmenuSlices`,
-  `CenterDashboard`, `SliceContent` e `geometry.ts`.
-- `components/settings/`: `SettingsPanel` (container) + `ItemsPanel`, `ActionEditor`,
-  `AppearancePanel`, `SettingsHeader`, `RangeField`, `itemFactory`.
+  `CenterDashboard`, `SliceContent`, `geometry.ts` e `themeVars.ts`.
+- `components/settings/`: `SettingsShell` (topbar + navegação + rascunho) e `pages/` com
+  `GeneralPage`, `AppearancePage`, `RadialPage`, `ActionsPage`, `SubmenusPage`, `ShortcutsPage`,
+  `IntegrationsPage` e `AboutPage`; `MenuPreview` e `itemFactory`.
+- `components/ui/`: primitivas reutilizáveis (`Button`, `Card`, `Field`, `Slider`, `Switch`,
+  `Badge`, `ConfirmDialog`, `PageHeader`) + `ui.css`.
 - `components/common/`: `CustomIcon` e `renderIcon`.
-- `hooks/`: `useRadialConfig`, `useSystemStats`, `useClock`, `useMenuVisibility`.
+- `hooks/`: `useRadialConfig`, `useSystemStats`, `useClock`, `useMenuVisibility`, `useSettingsDraft`.
 - `lib/config/`: tipos, opções, defaults, normalização e operações de árvore (barrel `index.ts`).
 - `lib/api.ts`: **único** lugar que chama `invoke`.
-- `lib/icons/`, `lib/format.ts`, `lib/id.ts`; `styles/` para CSS global.
+- `lib/icons/`, `lib/format.ts`, `lib/id.ts`; `styles/tokens.css` (design tokens) + `index.css`.
 
 ## Comandos
 
@@ -65,13 +68,19 @@ Antes de commitar: `npm run lint` + `npm run test` + `cargo test`. Commits peque
 2. **Nada de lógica no `lib.rs`** — ele é cola, não implementação.
 3. `save_config` devolve `Result<Vec<String>, String>`: erros de efeito colateral (auto-start,
    atalho) viram **avisos** exibidos no painel. Não volte a silenciar com `let _ =`.
-4. **CSS é design intencional** (glass + neon do usuário). Mova junto da feature, não reescreva
-   a estética sem pedido explícito.
+4. **O visual é intencional**: use `styles/tokens.css` e as primitivas de `components/ui`.
+   Não invente paleta nova, gradiente forte ou glow permanente sem pedido explícito — a
+   direção v2 é carvão/grafite com acentos pontuais.
 5. Ícone dinâmico → use `renderIcon()` (`createElement`). `const Icon = getIconComponent(...)`
    dentro do render quebra a regra `react-hooks/static-components`.
 6. Fetch inicial em `useEffect` → adie com `setTimeout(…, 0)`, senão a regra
    `react-hooks/set-state-in-effect` falha o lint.
 7. Regra de negócio nova merece teste: `cargo test` para Rust, `npm test` para árvore/normalização.
+8. **UI não usa cor/espaço literal**: tudo sai de `styles/tokens.css` (`--bg-surface`, `--accent`,
+   `--space-*`, `--radius-*`). Páginas do painel recebem `PageProps` e editam o mesmo rascunho —
+   trocar de página não pode perder alteração.
+9. **Integrações nunca mentem**: recurso sem backend aparece como "Indisponível" (ver
+   `IntegrationsPage`), nunca com estado simulado.
 
 ## Armadilhas conhecidas
 
@@ -88,11 +97,13 @@ Antes de commitar: `npm run lint` + `npm run test` + `cargo test`. Commits peque
 ## Verificação sem atrapalhar o usuário
 
 - **Preview headless** (não abre janela):
-  `msedge --headless=new --screenshot=out.png "http://127.0.0.1:5180/?window=settings"`
+  `msedge --headless=new --screenshot=out.png "http://127.0.0.1:5180/?window=settings&page=menu"`
   (precisa de `npm run dev` no ar). `?window=main` renderiza o menu com config de fallback.
+  Páginas válidas em `page=`: `geral`, `aparencia`, `menu`, `acoes`, `submenus`, `atalhos`,
+  `integracoes`, `sobre`.
 - **IPC real sem clicar**: suba o exe de release com
   `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`, ache os targets em
-  `http://127.0.0.1:9222/json/list` e diferencie pela DOM (`.settings-shell`), porque as duas
+  `http://127.0.0.1:9222/json/list` e diferencie pela DOM (`.settings-root`), porque as duas
   páginas têm o mesmo `<title>`. Dentro da página use `window.__TAURI_INTERNALS__.invoke`.
   `Page.captureScreenshot` fotografa a janela mesmo oculta.
 - **Cuidado com clique sintético**: o menu abre sob o cursor; `mouse_event` cego acerta a fatia
