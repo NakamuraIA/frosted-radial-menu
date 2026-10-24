@@ -79,6 +79,7 @@ export function useSettingsDraft() {
   const save = useCallback(async () => {
     setSaving(true);
     setSaveError(null);
+    setWarnings([]);
 
     try {
       const normalized = normalizeRadialConfig(draft);

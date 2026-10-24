@@ -1,7 +1,7 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState, type CSSProperties } from 'react';
 
-import { Button, Card, Field, PageHeader } from '../../ui';
+import { Button, Card, ConfirmDialog, Field, PageHeader } from '../../ui';
 import { CustomIcon } from '../../common/CustomIcon';
 import { renderIcon } from '../../common/renderIcon';
 import { createItem } from '../itemFactory';
@@ -28,6 +28,7 @@ const NON_TARGET_ACTIONS: ActionType[] = ['settings', 'submenu'];
 export function ActionsPage({ config, update }: PageProps) {
   const [selectedId, setSelectedId] = useState(() => config.items[0]?.id ?? '');
   const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const flatItems = useMemo(() => flattenMenuItems(config.items), [config.items]);
   const selected = findMenuItem(config.items, selectedId) ?? config.items[0] ?? null;
@@ -66,6 +67,7 @@ export function ActionsPage({ config, update }: PageProps) {
     const nextItems = removeItem(config.items, selected.id);
     update((current) => ({ ...current, items: nextItems }));
     setSelectedId(flattenMenuItems(nextItems)[0]?.item.id ?? '');
+    setConfirmDelete(false);
   };
 
   const moveBefore = (sourceId: string, targetId: string) => {
@@ -168,7 +170,7 @@ export function ActionsPage({ config, update }: PageProps) {
                     size="sm"
                     variant="danger"
                     icon={<Trash2 size={14} />}
-                    onClick={deleteSelected}
+                    onClick={() => setConfirmDelete(true)}
                     disabled={config.items.length <= 1}
                   >
                     Remover
@@ -307,6 +309,16 @@ export function ActionsPage({ config, update }: PageProps) {
           )}
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title={`Remover "${selected?.label ?? ''}"?`}
+        description="A ação (e os filhos dela) sai do rascunho. Você ainda pode descartar as alterações com Restaurar antes de salvar."
+        confirmLabel="Remover"
+        tone="danger"
+        onConfirm={deleteSelected}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </div>
   );
 }

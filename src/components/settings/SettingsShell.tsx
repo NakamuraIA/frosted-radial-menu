@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import {
   Aperture,
   CircleDot,
@@ -10,6 +11,7 @@ import {
   Save,
   Settings2,
   Undo2,
+  X,
   Zap,
 } from 'lucide-react';
 
@@ -17,6 +19,7 @@ import { Badge, Button, ConfirmDialog } from '../ui';
 import '../ui/ui.css';
 import './settings.css';
 import { useSettingsDraft } from '../../hooks/useSettingsDraft';
+import { api } from '../../lib/api';
 import { AboutPage } from './pages/AboutPage';
 import { ActionsPage } from './pages/ActionsPage';
 import { AppearancePage } from './pages/AppearancePage';
@@ -73,11 +76,20 @@ export function SettingsShell() {
 
   const version = useMemo(() => (typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '1.0.0'), []);
 
+  /** Fecha apenas esta janela: o launcher continua vivo na bandeja. */
+  const closeWindow = () => {
+    void api
+      .hideSettingsWindow()
+      .catch(() => getCurrentWindow().hide())
+      .catch(() => {});
+  };
+
   const statusBadge = (() => {
     if (state === 'loading') return <Badge tone="neutral">Carregando configuração…</Badge>;
     if (saveError) return <Badge tone="danger" dot>Erro ao salvar</Badge>;
     if (saving) return <Badge tone="accent" dot>Salvando…</Badge>;
     if (dirty) return <Badge tone="warning" dot>Alterações pendentes</Badge>;
+    if (warnings.length) return <Badge tone="warning" dot>Salvo com avisos</Badge>;
     return <Badge tone="success" dot>Alterações salvas</Badge>;
   })();
 
@@ -135,6 +147,14 @@ export function SettingsShell() {
           >
             Salvar
           </Button>
+          <Button
+            variant="ghost"
+            icon={<X size={16} />}
+            onClick={closeWindow}
+            aria-label="Fechar janela de configurações"
+            title="Fechar janela"
+            className="settings-close"
+          />
         </div>
       </header>
 

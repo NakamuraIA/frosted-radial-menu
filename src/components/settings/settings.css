@@ -74,6 +74,11 @@
   margin-right: var(--space-2);
 }
 
+.settings-close {
+  width: 36px;
+  padding: 0;
+}
+
 /* ---------- Faixas de status ---------- */
 .settings-banner {
   display: flex;
