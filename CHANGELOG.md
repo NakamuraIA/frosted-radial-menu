@@ -1,0 +1,45 @@
+# Changelog
+
+Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
+Versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
+
+## [1.1.0] — 2026-10-24
+
+### Adicionado
+
+- **Painel v2** com navegação lateral em 8 páginas: Geral, Aparência, Menu radial,
+  Ações, Submenus, Atalhos, Integrações e Sobre.
+- Design tokens (`src/styles/tokens.css`) e primitivas reutilizáveis em
+  `src/components/ui` (Button, Card, Field, Slider, Switch, Badge, ConfirmDialog,
+  PageHeader).
+- Rascunho com estado: indicador de alterações pendentes, Restaurar com confirmação,
+  botão Fechar e avisos do backend visíveis no topo.
+- Pré-visualização do radial ligada ao rascunho, com relógio e CPU reais.
+- **Presets**: importar/exportar configuração em JSON com diálogo nativo, validação,
+  limite de 1 MB e recusa de preset vazio.
+- **Modo de janela por ação**: mostrar um terminal único (PowerShell ou CMD) ou ocultar
+  a janela quando o comando já abre as próprias.
+- Submenus com até **8 filhos** (antes 5), com modo compacto automático.
+- Testes: 38 no Rust e 24 no frontend (Vitest).
+- CI no GitHub Actions (lint, testes, build, `cargo check` e `cargo test`).
+
+### Alterado
+
+- Paleta padrão v2: ciano `#43c7d9`, violeta `#a78bfa`, rosa `#e879d8`; menos glow
+  permanente, estados de hover/foco/seleção distinguíveis.
+- Auto-start migrado de tarefa agendada (`schtasks`) para
+  `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
+- `%VAR%` agora é expandido de forma case-insensitive, como no Windows.
+- `save_config` devolve avisos em vez de silenciar falhas de efeito colateral.
+- Padrão de `runCommandsAsAdmin` passou a ser `false`.
+
+### Corrigido
+
+- Auto-start falhava em silêncio e exigia administrador.
+- Comandos abriam dois terminais (shell intermediário + janela do comando).
+- `run_menu_action` não tinha como testar item ainda não salvo (pendente para 1.2).
+
+## [1.0.0] — 2026-04-29
+
+- Versão pública inicial: menu radial, submenus, tray, hotkey global, painel único,
+  auto-start e instalador NSIS.

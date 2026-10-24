@@ -20,20 +20,32 @@
 
 ## ✨ Recursos Principais
 
-- 🔘 **Menu Radial Transparente**: Efeito *glass/neon* elegante.
-- 📂 **Submenus Inteligentes**: Abrem na direção exata da fatia clicada.
-- 📊 **Monitoramento em Tempo Real**: Centro exibe hora, CPU, RAM e GPU.
-- ⚙️ **Altamente Configurável**: Edite botões, ícones, cores, tipos de ação, comandos e atalhos pelo painel visual.
-- 🎨 **Personalização Visual Completa**: Ajuste escala, raio, largura, espaço, tamanhos, fontes, brilho (glow) e muito mais.
-- 💾 **Configuração Persistente**: Salva localmente em JSON no diretório do usuário, mantendo as configurações seguras.
-- 🦀 **Backend Poderoso em Rust**:
-  - Abre arquivos, pastas, atalhos, `.exe` e URLs.
-  - Executa comandos PowerShell ou CMD.
-  - Manipula e controla janelas (abrir/esconder).
-  - Coleta estatísticas de hardware em tempo real (CPU/RAM).
-- 🖱️ **System Tray**: Ícone prático na bandeja do sistema para acessar configurações ou sair.
-- ⌨️ **Hotkey Global**: Abre e fecha o menu rapidamente (`Alt+Space` configurado por padrão).
-- 🚀 **Auto-Start Opcional**: Inicialização junto com o Windows via Tarefa Agendada.
+- 🔘 **Menu radial transparente**: fatias com estados distintos de hover, foco e seleção, abertura suave e respeito a `prefers-reduced-motion`.
+- 📂 **Submenus inteligentes**: abrem na direção da fatia clicada, com até **8 filhos** e modo compacto automático.
+- 📊 **Centro informativo**: hora, data e uso real de CPU (com opção de ocultar percentuais).
+- ⚙️ **Painel em 8 páginas**: Geral, Aparência, Menu radial, Ações, Submenus, Atalhos, Integrações e Sobre — cada categoria no seu lugar.
+- 🎛️ **Rascunho com estado**: indicador de alterações pendentes, Restaurar com confirmação e prévia do radial reagindo ao que você edita.
+- 💾 **Presets**: exporte/importe a configuração em JSON com validação (recusa arquivo inválido, vazio ou acima de 1 MB).
+- 🎨 **Personalização completa**: cores, vidro, glow, animação, escala, raios, espaçamento, ícones, textos e fonte.
+- 🖥️ **Modo de janela por ação**: mostrar um terminal único (PowerShell ou CMD) ou ocultar a janela quando o comando já abre as suas.
+- 🦀 **Backend em Rust**: abre arquivos/pastas/URLs, roda comandos, controla janelas e coleta CPU/RAM.
+- 🖱️ **Bandeja + atalho global**: `Alt+Space` por padrão, re-registrado ao salvar.
+- 🚀 **Auto-start sem admin**: chave `Run` do usuário no registro, com estado real exibido no painel.
+
+---
+
+## 📸 Capturas
+
+<div align="center">
+
+![Menu radial](docs/screenshots/menu.png)
+
+![Configurações — Geral](docs/screenshots/settings-geral.png)
+
+![Configurações — Menu radial com prévia](docs/screenshots/settings-menu.png)
+
+</div>
+
 
 ---
 
@@ -96,12 +108,14 @@ npm run tauri dev
 Comandos úteis para manter a qualidade do código:
 
 ```bash
-npm run lint
-npm run build
-cd src-tauri
-cargo check
-cargo test
+npm run lint                  # eslint (inclui regras do React Compiler)
+npm run test                  # vitest — funções puras do painel
+npm run build                 # tsc -b && vite build
+cargo check --manifest-path src-tauri/Cargo.toml --all-targets
+cargo test  --manifest-path src-tauri/Cargo.toml
 ```
+
+O CI (`.github/workflows/ci.yml`) roda esses mesmos passos em `windows-latest` a cada push/PR.
 
 ---
 
