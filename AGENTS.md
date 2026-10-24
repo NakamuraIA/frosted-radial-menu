@@ -1,0 +1,99 @@
+# AGENTS.md — Frosted Radial Menu
+
+Launcher radial para Windows: React + TypeScript no frontend, Rust/Tauri 2 no backend.
+Este arquivo existe para que qualquer sessão de agente comece sabendo as regras que
+custaram tempo para descobrir. Leia antes de mexer no código.
+
+## Stack e versões travadas
+
+| Peça | Versão | Por quê |
+|---|---|---|
+| Tauri / tauri-build | 2.12.5 / 2.7.4 | protocol-asset + tray-icon habilitados |
+| React / Vite | 19.3.1 / 8.3.5 | — |
+| TypeScript | **6.0.3** | `typescript-eslint` declara peer `<6.1.0`; não subir para 7 |
+| sysinfo | **0.38.4** | 0.39 exige rustc 1.95; o toolchain da máquina é 1.94.1 |
+| windows-sys / winreg | 0.61.2 / 0.55 | registro do Windows para auto-start |
+
+Versão do app é **1.0.0** em `package.json`, `src-tauri/Cargo.toml` e
+`src-tauri/tauri.conf.json` — mantenha os três alinhados.
+
+## Mapa de módulos
+
+**Rust (`src-tauri/src/`)**
+
+- `lib.rs`: **só** a montagem do `Builder` (estado, plugin, handler, setup). Sem lógica.
+- `commands/`: superfície `invoke` (config, menu, windows, system, autostart). Valida e delega.
+- `config/`: `model` (structs serde camelCase), `defaults` (config padrão), `store` (JSON + migração).
+- `menu/`: `actions` (dispatch por `actionType`), `shell` (PowerShell/CMD, expansão de `%VAR%`).
+- `platform/`: `hotkey` (atalho global), `autostart` (registro do Windows).
+- `system/`: `stats` (CPU/RAM).
+- `ui/`: `windows`, `placement` (clamp no monitor), `tray`.
+- `state.rs`: `AppState` (System + shortcut atual).
+
+**Frontend (`src/`)**
+
+- `App.tsx`: roteia a janela pelo label (`?window=settings` serve para preview).
+- `components/radial/`: `RadialMenu` (container) + `RadialCanvas`, `MainSlice`, `SubmenuSlices`,
+  `CenterDashboard`, `SliceContent` e `geometry.ts`.
+- `components/settings/`: `SettingsPanel` (container) + `ItemsPanel`, `ActionEditor`,
+  `AppearancePanel`, `SettingsHeader`, `RangeField`, `itemFactory`.
+- `components/common/`: `CustomIcon` e `renderIcon`.
+- `hooks/`: `useRadialConfig`, `useSystemStats`, `useClock`, `useMenuVisibility`.
+- `lib/config/`: tipos, opções, defaults, normalização e operações de árvore (barrel `index.ts`).
+- `lib/api.ts`: **único** lugar que chama `invoke`.
+- `lib/icons/`, `lib/format.ts`, `lib/id.ts`; `styles/` para CSS global.
+
+## Comandos
+
+```bash
+npm run lint                  # eslint (inclui regras do React Compiler)
+npm run test                  # vitest, funções puras, sem DOM
+npm run build                 # tsc -b && vite build
+cargo check --manifest-path src-tauri/Cargo.toml --all-targets
+cargo test  --manifest-path src-tauri/Cargo.toml
+npm run tauri build           # gera exe + instalador NSIS
+npm run tauri dev             # Vite em http://127.0.0.1:5180
+```
+
+Antes de commitar: `npm run lint` + `npm run test` + `cargo test`. Commits pequenos e por assunto.
+
+## Regras
+
+1. **Comando Tauri novo** → criar em `commands/<area>.rs` e registrar no `generate_handler!`
+   com o **caminho completo** (`commands::<area>::<fn>`): o macro procura o `__cmd__` no módulo
+   onde o comando foi declarado, então re-export não funciona.
+2. **Nada de lógica no `lib.rs`** — ele é cola, não implementação.
+3. `save_config` devolve `Result<Vec<String>, String>`: erros de efeito colateral (auto-start,
+   atalho) viram **avisos** exibidos no painel. Não volte a silenciar com `let _ =`.
+4. **CSS é design intencional** (glass + neon do usuário). Mova junto da feature, não reescreva
+   a estética sem pedido explícito.
+5. Ícone dinâmico → use `renderIcon()` (`createElement`). `const Icon = getIconComponent(...)`
+   dentro do render quebra a regra `react-hooks/static-components`.
+6. Fetch inicial em `useEffect` → adie com `setTimeout(…, 0)`, senão a regra
+   `react-hooks/set-state-in-effect` falha o lint.
+7. Regra de negócio nova merece teste: `cargo test` para Rust, `npm test` para árvore/normalização.
+
+## Armadilhas conhecidas
+
+- **Auto-start**: `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, valor `FrostedRadialMenu`.
+  Nunca `schtasks /sc onlogon` — exige admin e falha com "Acesso negado". Em build de dev
+  (`cfg(dev)`) ligar o auto-start devolve erro explicativo e não registra nada.
+- **`%VAR%` é case-insensitive** (Windows): `%windir%`, `%WINDIR%` e `%WinDir%` precisam expandir.
+- **Config real**: `%LOCALAPPDATA%\com.nakamuraia.frostedradialmenu\config.json`
+  (migra automaticamente de `%APPDATA%`). Não confunda com presets do repo.
+- **Janelas nascem ocultas** (`visible: false`): fechar = esconder; o app vive na bandeja.
+  O menu abre centrado no cursor, com clamp por monitor, em um canvas de 1080×1080.
+- O shell escala o menu por `--menu-scale`; coordenadas de clique não são as do SVG.
+
+## Verificação sem atrapalhar o usuário
+
+- **Preview headless** (não abre janela):
+  `msedge --headless=new --screenshot=out.png "http://127.0.0.1:5180/?window=settings"`
+  (precisa de `npm run dev` no ar). `?window=main` renderiza o menu com config de fallback.
+- **IPC real sem clicar**: suba o exe de release com
+  `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`, ache os targets em
+  `http://127.0.0.1:9222/json/list` e diferencie pela DOM (`.settings-shell`), porque as duas
+  páginas têm o mesmo `<title>`. Dentro da página use `window.__TAURI_INTERNALS__.invoke`.
+  `Page.captureScreenshot` fotografa a janela mesmo oculta.
+- **Cuidado com clique sintético**: o menu abre sob o cursor; `mouse_event` cego acerta a fatia
+  errada e pode abrir apps/terminais de verdade. Prefira hover + screenshot para calibrar.
