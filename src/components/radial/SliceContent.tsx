@@ -10,16 +10,25 @@ interface SliceContentProps {
   isHovered: boolean;
   size: 'main' | 'sub';
   layout: LayoutConfig;
+  /** Reduz ícones/rótulos quando o arco tem muitos filhos. */
+  compact?: boolean;
 }
 
 /** Conteúdo interno de uma fatia: ícone (ou imagem customizada) + rótulo. */
-export function SliceContent({ item, isHovered, size, layout }: SliceContentProps) {
-  const iconSize = size === 'main' ? layout.mainIconSize : layout.submenuIconSize;
-  const labelSize = size === 'main' ? layout.mainLabelSize : layout.submenuLabelSize;
+export function SliceContent({
+  item,
+  isHovered,
+  size,
+  layout,
+  compact = false,
+}: SliceContentProps) {
+  const density = compact ? 0.82 : 1;
+  const iconSize = (size === 'main' ? layout.mainIconSize : layout.submenuIconSize) * density;
+  const labelSize = (size === 'main' ? layout.mainLabelSize : layout.submenuLabelSize) * density;
 
   return (
     <div
-      className={`slice-content slice-content-${size}`}
+      className={`slice-content slice-content-${size} ${compact ? 'is-compact' : ''}`}
       style={
         {
           '--slice-icon-size': `${iconSize}px`,

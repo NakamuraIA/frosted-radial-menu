@@ -214,6 +214,18 @@
   margin-bottom: 8px;
 }
 
+.slice-content.is-compact span {
+  max-width: 76px;
+}
+
+.slice-content.is-compact svg {
+  margin-bottom: 6px;
+}
+
+.slice-content.is-compact i {
+  margin-top: 5px;
+}
+
 .slice-group.is-hovered .slice-content,
 .slice-group.is-active .slice-content,
 .slice-group:focus-visible .slice-content {

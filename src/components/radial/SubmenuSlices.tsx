@@ -13,6 +13,9 @@ interface SubmenuSlicesProps {
   onSelect: (item: MenuItemConfig) => void;
 }
 
+const MAX_SUBMENU_ITEMS = 8;
+const COMPACT_THRESHOLD = 5;
+
 /** Arco externo com os filhos da fatia ativa. */
 export function SubmenuSlices({
   parent,
@@ -25,9 +28,12 @@ export function SubmenuSlices({
   const children = parent?.children ?? [];
   if (!children.length) return null;
 
+  const visibleChildren = children.slice(0, MAX_SUBMENU_ITEMS);
+  const compact = visibleChildren.length > COMPACT_THRESHOLD;
+
   return (
-    <g className="submenu-slices">
-      {children.slice(0, 5).map((item, index, visibleChildren) => {
+    <g className={`submenu-slices ${compact ? 'is-dense' : ''}`}>
+      {visibleChildren.map((item, index) => {
         const geometry = getSubmenuGeometry(parentAngle, visibleChildren.length, layout.submenuSpread);
         const startAngle = geometry.startAngle + index * geometry.anglePerItem;
         const endAngle = startAngle + geometry.anglePerItem;
@@ -67,7 +73,13 @@ export function SubmenuSlices({
               height="110"
               className="slice-foreign"
             >
-              <SliceContent item={item} isHovered={isHovered} size="sub" layout={layout} />
+              <SliceContent
+                item={item}
+                isHovered={isHovered}
+                size="sub"
+                layout={layout}
+                compact={compact}
+              />
             </foreignObject>
           </g>
         );

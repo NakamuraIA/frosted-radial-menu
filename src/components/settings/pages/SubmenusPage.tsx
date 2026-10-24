@@ -73,9 +73,10 @@ export function SubmenusPage({ config, update }: PageProps) {
             <p className="page-hint">
               A ordem da lista é a ordem das fatias no menu. Submenus exibem no máximo
               {' '}
-              <strong>5 filhos</strong>
+              <strong>8 filhos</strong>
               {' '}
-              no arco; os demais continuam salvos na configuração.
+              no arco, com ícones e rótulos compactos acima de 5; os demais continuam salvos na
+              configuração.
             </p>
           </Card>
         </div>
