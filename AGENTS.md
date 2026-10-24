@@ -81,6 +81,10 @@ Antes de commitar: `npm run lint` + `npm run test` + `cargo test`. Commits peque
    trocar de página não pode perder alteração.
 9. **Integrações nunca mentem**: recurso sem backend aparece como "Indisponível" (ver
    `IntegrationsPage`), nunca com estado simulado.
+10. Comando que **já abre as próprias janelas** (um `.bat` com `start`) deve usar
+    `windowMode: "hide"`; caso contrário o usuário vê um terminal extra vazio. No modo
+    visível, o shell é iniciado direto com `CREATE_NEW_CONSOLE` — não volte a usar um
+    PowerShell intermediário com `Start-Process` (gera duas janelas).
 
 ## Armadilhas conhecidas
 

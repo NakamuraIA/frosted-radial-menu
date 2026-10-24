@@ -48,6 +48,7 @@ fn item(
         value: value.map(str::to_string),
         working_dir: None,
         shell: shell.map(str::to_string),
+        window_mode: None,
         children,
     }
 }

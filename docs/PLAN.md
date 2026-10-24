@@ -145,6 +145,9 @@ Concluido:
 - Painel v2 com páginas por categoria e prévia ao vivo.
 - Importar/exportar preset em JSON pelo painel (diálogo nativo, validação na
   importação, limite de 1 MB, recusa preset vazio).
+- Modo de janela por ação: `show` abre um único terminal (PowerShell ou CMD,
+  sem shell intermediário) e `hide` executa sem janela para comandos que já
+  abrem as próprias janelas.
 
 Pendente:
 

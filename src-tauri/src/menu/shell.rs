@@ -50,29 +50,61 @@ pub fn ps_single_quote(value: &str) -> String {
     format!("'{}'", value.replace('\'', "''"))
 }
 
+/// `true` quando o item pede para rodar sem abrir um terminal próprio.
+pub fn should_hide_window(action: &MenuItemConfig) -> bool {
+    action
+        .window_mode
+        .as_deref()
+        .map(|mode| mode.eq_ignore_ascii_case("hide"))
+        .unwrap_or(false)
+}
+
 /// Monta a linha de inicialização do shell escolhido.
-fn shell_command(shell: &str, command_line: &str) -> (&'static str, Vec<String>) {
+///
+/// Em modo oculto não usamos `/K` nem `-NoExit`: o processo precisa terminar.
+pub fn shell_command(shell: &str, command_line: &str, hidden: bool) -> (&'static str, Vec<String>) {
     if shell.eq_ignore_ascii_case("cmd") {
-        ("cmd.exe", vec!["/K".to_string(), command_line.to_string()])
+        let flag = if hidden { "/C" } else { "/K" };
+        ("cmd.exe", vec![flag.to_string(), command_line.to_string()])
     } else {
-        (
-            "powershell.exe",
-            vec![
-                "-NoExit".to_string(),
-                "-NoProfile".to_string(),
-                "-ExecutionPolicy".to_string(),
-                "Bypass".to_string(),
-                "-Command".to_string(),
-                command_line.to_string(),
-            ],
-        )
+        let mut args = Vec::new();
+        if !hidden {
+            args.push("-NoExit".to_string());
+        }
+        args.extend([
+            "-NoProfile".to_string(),
+            "-ExecutionPolicy".to_string(),
+            "Bypass".to_string(),
+            "-Command".to_string(),
+            command_line.to_string(),
+        ]);
+        ("powershell.exe", args)
     }
 }
 
-/// Abre um novo terminal executando o comando configurado.
+#[cfg(windows)]
+fn apply_console_flags(command: &mut Command, hidden: bool) {
+    use std::os::windows::process::CommandExt;
+
+    const CREATE_NEW_CONSOLE: u32 = 0x0000_0010;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
+    command.creation_flags(if hidden {
+        CREATE_NO_WINDOW
+    } else {
+        CREATE_NEW_CONSOLE
+    });
+}
+
+#[cfg(not(windows))]
+fn apply_console_flags(_command: &mut Command, _hidden: bool) {}
+
+/// Executa um comando no shell escolhido.
 ///
-/// A elevação (`-Verb RunAs`) é opcional e controlada por preferência do
-/// usuário; quando ligada, o Windows mostra o prompt do UAC.
+/// - `window_mode = hide` → sem janela; serve para comandos que já abrem as
+///   próprias janelas (um `.bat` que dá `start`, por exemplo).
+/// - janela visível → um único terminal (nada de shell intermediário).
+/// - `run_as_admin` → `Start-Process -Verb RunAs`, que mostra o UAC.
 pub fn run_shell_action(action: &MenuItemConfig, run_as_admin: bool) -> Result<(), String> {
     let command_line = action
         .value
@@ -83,6 +115,7 @@ pub fn run_shell_action(action: &MenuItemConfig, run_as_admin: bool) -> Result<(
 
     let command_line = expand_env_vars(command_line);
     let shell = action.shell.as_deref().unwrap_or("powershell");
+    let hidden = should_hide_window(action);
     let working_dir = action
         .working_dir
         .as_deref()
@@ -90,43 +123,65 @@ pub fn run_shell_action(action: &MenuItemConfig, run_as_admin: bool) -> Result<(
         .filter(|value| !value.is_empty())
         .map(expand_env_vars);
 
-    let (program, args) = shell_command(shell, &command_line);
-    let argument_list = args
-        .iter()
-        .map(|arg| ps_single_quote(arg))
-        .collect::<Vec<_>>()
-        .join(", ");
-
-    let mut script = format!(
-        "Start-Process -FilePath {} -ArgumentList @({})",
-        ps_single_quote(program),
-        argument_list
-    );
-
-    if let Some(working_dir) = working_dir {
-        script.push_str(&format!(" -WorkingDirectory {}", ps_single_quote(&working_dir)));
-    }
+    let (program, args) = shell_command(shell, &command_line, hidden);
 
     if run_as_admin {
+        let argument_list = args
+            .iter()
+            .map(|arg| ps_single_quote(arg))
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        let mut script = format!(
+            "Start-Process -FilePath {} -ArgumentList @({})",
+            ps_single_quote(program),
+            argument_list
+        );
+
+        if let Some(working_dir) = working_dir {
+            script.push_str(&format!(" -WorkingDirectory {}", ps_single_quote(&working_dir)));
+        }
+
+        if hidden {
+            script.push_str(" -WindowStyle Hidden");
+        }
+
         script.push_str(" -Verb RunAs");
+
+        let mut helper = Command::new("powershell.exe");
+        helper.args([
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            &script,
+        ]);
+        helper
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        apply_console_flags(&mut helper, true);
+
+        return helper.spawn().map(|_| ()).map_err(|error| error.to_string());
     }
 
-    let mut command = Command::new("powershell.exe");
-    command.args([
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        &script,
-    ]);
+    let mut command = Command::new(program);
+    command.args(&args);
 
-    command
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn()
-        .map(|_| ())
-        .map_err(|error| error.to_string())
+    if let Some(working_dir) = working_dir {
+        command.current_dir(working_dir);
+    }
+
+    if hidden {
+        command
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+    }
+
+    apply_console_flags(&mut command, hidden);
+
+    command.spawn().map(|_| ()).map_err(|error| error.to_string())
 }
 
 #[cfg(test)]
@@ -144,6 +199,7 @@ mod tests {
             value: Some(value.into()),
             working_dir: None,
             shell: shell.map(str::to_string),
+            window_mode: None,
             children: None,
         }
     }
@@ -191,17 +247,45 @@ mod tests {
     }
 
     #[test]
-    fn cmd_shell_uses_keep_open_flag() {
-        let (program, args) = shell_command("cmd", "echo hi");
+    fn cmd_shell_keeps_the_window_open_when_visible() {
+        let (program, args) = shell_command("cmd", "echo hi", false);
         assert_eq!(program, "cmd.exe");
         assert_eq!(args, vec!["/K".to_string(), "echo hi".to_string()]);
     }
 
     #[test]
-    fn powershell_shell_is_the_default() {
-        let (program, args) = shell_command("qualquer", "echo hi");
+    fn cmd_shell_exits_when_hidden() {
+        let (_, args) = shell_command("cmd", "echo hi", true);
+        assert_eq!(args[0], "/C");
+    }
+
+    #[test]
+    fn powershell_shell_is_the_default_and_stays_open() {
+        let (program, args) = shell_command("qualquer", "echo hi", false);
         assert_eq!(program, "powershell.exe");
         assert_eq!(args[0], "-NoExit");
         assert_eq!(args.last().unwrap(), "echo hi");
+    }
+
+    #[test]
+    fn powershell_hidden_omits_no_exit() {
+        let (_, args) = shell_command("qualquer", "echo hi", true);
+        assert!(!args.iter().any(|arg| arg == "-NoExit"));
+        assert_eq!(args.last().unwrap(), "echo hi");
+    }
+
+    #[test]
+    fn window_mode_hide_is_recognized() {
+        let mut item = action("echo hi", Some("cmd"));
+        assert!(!should_hide_window(&item));
+
+        item.window_mode = Some("hide".into());
+        assert!(should_hide_window(&item));
+
+        item.window_mode = Some("HIDE".into());
+        assert!(should_hide_window(&item));
+
+        item.window_mode = Some("show".into());
+        assert!(!should_hide_window(&item));
     }
 }

@@ -19,6 +19,7 @@ import {
   type ActionType,
   type MenuItemConfig,
   type ShellType,
+  type WindowMode,
 } from '../../../lib/config';
 import { resolveCustomIconSrc } from '../../../lib/icons';
 
@@ -284,6 +285,24 @@ export function ActionsPage({ config, update }: PageProps) {
                     disabled={commandOnly}
                     onChange={(event) => patchSelected({ workingDir: event.target.value })}
                   />
+                </Field>
+
+                <Field
+                  label="Janela"
+                  hint="Oculte quando o comando já abre as próprias janelas (ex.: um .bat com start)."
+                  className="span-2"
+                >
+                  <select
+                    className="ui-select"
+                    value={selected.windowMode ?? 'show'}
+                    disabled={commandOnly}
+                    onChange={(event) =>
+                      patchSelected({ windowMode: event.target.value as WindowMode })
+                    }
+                  >
+                    <option value="show">Mostrar terminal ao executar</option>
+                    <option value="hide">Ocultar janela (sem terminal extra)</option>
+                  </select>
                 </Field>
               </div>
 

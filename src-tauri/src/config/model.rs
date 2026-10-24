@@ -80,6 +80,10 @@ pub struct MenuItemConfig {
     pub working_dir: Option<String>,
     #[serde(default)]
     pub shell: Option<String>,
+    /// `hide` executa o comando sem abrir um terminal extra — útil quando o
+    /// próprio comando abre as janelas que precisa (ex.: um .bat que dá `start`).
+    #[serde(default)]
+    pub window_mode: Option<String>,
     #[serde(default)]
     pub children: Option<Vec<MenuItemConfig>>,
 }

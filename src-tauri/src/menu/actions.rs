@@ -64,6 +64,7 @@ mod tests {
                 value: None,
                 working_dir: None,
                 shell: None,
+                window_mode: None,
                 children: Some(vec![MenuItemConfig {
                     id: "child".into(),
                     label: "Child".into(),
@@ -74,6 +75,7 @@ mod tests {
                     value: Some("C:\\".into()),
                     working_dir: None,
                     shell: None,
+                    window_mode: None,
                     children: None,
                 }]),
             },
@@ -87,6 +89,7 @@ mod tests {
                 value: None,
                 working_dir: None,
                 shell: None,
+                window_mode: None,
                 children: None,
             },
         ]

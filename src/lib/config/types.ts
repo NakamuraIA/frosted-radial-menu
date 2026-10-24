@@ -8,6 +8,9 @@ export type ActionType =
 
 export type ShellType = 'powershell' | 'cmd';
 
+/** `hide` evita abrir um terminal extra quando o comando abre as próprias janelas. */
+export type WindowMode = 'show' | 'hide';
+
 export interface MenuItemConfig {
   id: string;
   label: string;
@@ -18,6 +21,7 @@ export interface MenuItemConfig {
   value?: string;
   workingDir?: string;
   shell?: ShellType;
+  windowMode?: WindowMode;
   children?: MenuItemConfig[];
 }
 
