@@ -46,6 +46,7 @@ pub fn run() {
             commands::config::load_config,
             commands::config::save_config,
             commands::menu::run_menu_action,
+            commands::menu::run_action_preview,
             commands::windows::open_settings_window,
             commands::windows::hide_main_window,
             commands::windows::hide_settings_window,

@@ -9,14 +9,13 @@ import { useRadialConfig } from '../../hooks/useRadialConfig';
 import { useSystemStats } from '../../hooks/useSystemStats';
 import { api } from '../../lib/api';
 import {
+  MAX_MAIN_SLICES,
   findMenuItem,
   normalizeLayoutConfig,
   type MenuItemConfig,
 } from '../../lib/config';
 import { clampPercent } from '../../lib/format';
 import './RadialMenu.css';
-
-const MAX_MAIN_ITEMS = 10;
 
 /**
  * Container do menu: junta configuração, métricas e estado de visibilidade e
@@ -29,7 +28,7 @@ export function RadialMenu() {
   const { isOpen, activeParentId, setActiveParentId, hide } = useMenuVisibility(reload);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const mainItems = useMemo(() => config.items.slice(0, MAX_MAIN_ITEMS), [config.items]);
+  const mainItems = useMemo(() => config.items.slice(0, MAX_MAIN_SLICES), [config.items]);
   const layout = useMemo(() => normalizeLayoutConfig(config.layout), [config.layout]);
   const activeParent = useMemo(
     () => findMenuItem(config.items, activeParentId),

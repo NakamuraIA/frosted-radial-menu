@@ -602,3 +602,13 @@
   color: var(--text-primary);
   font-weight: var(--weight-semibold);
 }
+
+.ui-note.is-warning {
+  border-left-color: rgba(242, 196, 109, 0.6);
+  background: var(--warning-soft);
+  color: #f3d193;
+}
+
+.ui-note.is-warning strong {
+  color: #ffe3ad;
+}

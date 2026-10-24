@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 
 import { SliceContent } from './SliceContent';
 import { getDonutSlicePath, getLabelPosition, getSubmenuGeometry } from './geometry';
-import type { LayoutConfig, MenuItemConfig } from '../../lib/config';
+import { MAX_SUBMENU_ITEMS, type LayoutConfig, type MenuItemConfig } from '../../lib/config';
 
 interface SubmenuSlicesProps {
   parent: MenuItemConfig | null;
@@ -13,7 +13,6 @@ interface SubmenuSlicesProps {
   onSelect: (item: MenuItemConfig) => void;
 }
 
-const MAX_SUBMENU_ITEMS = 8;
 const COMPACT_THRESHOLD = 5;
 
 /** Arco externo com os filhos da fatia ativa. */

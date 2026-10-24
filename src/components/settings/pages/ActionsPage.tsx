@@ -1,7 +1,9 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { open as openDialog } from '@tauri-apps/plugin-dialog';
+import { Play, Plus, Trash2, TriangleAlert } from 'lucide-react';
 import { useMemo, useState, type CSSProperties } from 'react';
 
 import { Button, Card, ConfirmDialog, Field, PageHeader } from '../../ui';
+import { api } from '../../../lib/api';
 import { CustomIcon } from '../../common/CustomIcon';
 import { renderIcon } from '../../common/renderIcon';
 import { createItem } from '../itemFactory';
@@ -9,6 +11,7 @@ import type { PageProps } from './types';
 import {
   ACTION_TYPE_LABELS,
   ICON_OPTIONS,
+  MAX_MAIN_SLICES,
   cloneItem,
   findMenuItem,
   flattenMenuItems,
@@ -30,6 +33,10 @@ export function ActionsPage({ config, update }: PageProps) {
   const [selectedId, setSelectedId] = useState(() => config.items[0]?.id ?? '');
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testMessage, setTestMessage] = useState<{ tone: 'success' | 'danger'; text: string } | null>(
+    null,
+  );
 
   const flatItems = useMemo(() => flattenMenuItems(config.items), [config.items]);
   const selected = findMenuItem(config.items, selectedId) ?? config.items[0] ?? null;
@@ -77,6 +84,38 @@ export function ActionsPage({ config, update }: PageProps) {
     setSelectedId(sourceId);
   };
 
+  const hiddenSlices = Math.max(0, config.items.length - MAX_MAIN_SLICES);
+
+  const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
+  const testAction = async () => {
+    if (!selected) return;
+    setTesting(true);
+    setTestMessage(null);
+
+    try {
+      await api.runActionPreview(selected, config.preferences.runCommandsAsAdmin);
+      setTestMessage({ tone: 'success', text: `"${selected.label}" executada com sucesso.` });
+    } catch (error) {
+      setTestMessage({ tone: 'danger', text: `Falha ao testar: ${errorText(error)}` });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const pickPath = async (kind: 'file' | 'folder', apply: (path: string) => void) => {
+    try {
+      const picked = await openDialog({
+        title: kind === 'folder' ? 'Escolher pasta' : 'Escolher arquivo',
+        directory: kind === 'folder',
+        multiple: false,
+      });
+      if (typeof picked === 'string') apply(picked);
+    } catch (error) {
+      setTestMessage({ tone: 'danger', text: `Falha ao abrir o seletor: ${errorText(error)}` });
+    }
+  };
+
   const targetDisabled = selected ? NON_TARGET_ACTIONS.includes(selected.actionType) : true;
   const commandOnly = selected?.actionType !== 'runCommand';
 
@@ -87,6 +126,16 @@ export function ActionsPage({ config, update }: PageProps) {
         title="Ações"
         description="Aplicativos, comandos e destinos vinculados às fatias do menu."
       />
+
+      {hiddenSlices > 0 ? (
+        <div className="ui-note is-warning" role="status">
+          <TriangleAlert size={16} />
+          <span>
+            <strong>{hiddenSlices} item(ns) fora do menu:</strong> o radial mostra no máximo{' '}
+            {MAX_MAIN_SLICES} fatias. Remova itens ou agrupe em um submenu para que apareçam.
+          </span>
+        </div>
+      ) : null}
 
       <div className="actions-layout">
         <Card
@@ -164,6 +213,20 @@ export function ActionsPage({ config, update }: PageProps) {
                   <h2>{selected.label}</h2>
                 </div>
                 <div className="ui-inline">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    icon={<Play size={14} />}
+                    onClick={() => void testAction()}
+                    loading={testing}
+                    disabled={
+                      !selected ||
+                      selected.actionType === 'submenu' ||
+                      selected.actionType === 'none'
+                    }
+                  >
+                    Testar ação
+                  </Button>
                   <Button size="sm" variant="secondary" onClick={duplicateSelected}>
                     Duplicar
                   </Button>
@@ -178,6 +241,12 @@ export function ActionsPage({ config, update }: PageProps) {
                   </Button>
                 </div>
               </div>
+
+              {testMessage ? (
+                <p className={`preset-message is-${testMessage.tone}`} role="status">
+                  {testMessage.text}
+                </p>
+              ) : null}
 
               <div className="form-grid">
                 <Field label="Nome">
@@ -263,6 +332,32 @@ export function ActionsPage({ config, update }: PageProps) {
                     disabled={targetDisabled}
                     onChange={(event) => patchSelected({ value: event.target.value })}
                   />
+                  {!targetDisabled && selected.actionType !== 'openUrl' ? (
+                    <div className="picker-row">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="picker-button"
+                        onClick={() =>
+                          void pickPath('file', (path) => patchSelected({ value: path }))
+                        }
+                      >
+                        Escolher arquivo…
+                      </Button>
+                      {selected.actionType === 'openPath' ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="picker-button"
+                          onClick={() =>
+                            void pickPath('folder', (path) => patchSelected({ value: path }))
+                          }
+                        >
+                          Escolher pasta…
+                        </Button>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </Field>
 
                 <Field label="Shell" hint="Só para comandos.">
@@ -285,6 +380,20 @@ export function ActionsPage({ config, update }: PageProps) {
                     disabled={commandOnly}
                     onChange={(event) => patchSelected({ workingDir: event.target.value })}
                   />
+                  {!commandOnly ? (
+                    <div className="picker-row">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="picker-button"
+                        onClick={() =>
+                          void pickPath('folder', (path) => patchSelected({ workingDir: path }))
+                        }
+                      >
+                        Escolher pasta…
+                      </Button>
+                    </div>
+                  ) : null}
                 </Field>
 
                 <Field

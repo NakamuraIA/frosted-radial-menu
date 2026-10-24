@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type { RadialConfig, SystemStats } from './config';
+import type { MenuItemConfig, RadialConfig, SystemStats } from './config';
 
 /**
  * Ponto único de contato com o backend Rust.
@@ -16,6 +16,10 @@ export const api = {
   saveConfig: (config: RadialConfig) => invoke<string[]>('save_config', { config }),
 
   runMenuAction: (actionId: string) => invoke<void>('run_menu_action', { actionId }),
+
+  /** Testa um item do rascunho sem salvar (botão "Testar ação"). */
+  runActionPreview: (item: MenuItemConfig, runAsAdmin: boolean) =>
+    invoke<void>('run_action_preview', { item, runAsAdmin }),
 
   openSettingsWindow: () => invoke<void>('open_settings_window'),
 

@@ -628,6 +628,24 @@ details.diagnostics pre {
   color: #ff9aab;
 }
 
+/* Botões de seletor nativo dentro dos campos de caminho. */
+.picker-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.picker-button {
+  height: 26px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.picker-button:hover {
+  color: var(--text-primary);
+}
+
 @media (max-width: 1040px) {
   .page-grid {
     grid-template-columns: minmax(0, 1fr);
