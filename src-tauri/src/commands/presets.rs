@@ -101,8 +101,7 @@ mod tests {
     }
 
     #[test]
-    fn accepts_presets_without_optional_layout() {
-        let payload = serde_json::json!({
+    fn accepts_presets_without_optional_layout() {        let payload = serde_json::json!({
             "version": 1,
             "theme": {
                 "accent": "#43c7d9",
@@ -133,5 +132,59 @@ mod tests {
         let parsed = parse_preset(&payload).expect("aceita preset minimo");
         assert_eq!(parsed.items.len(), 1);
         assert!(parsed.layout.main_outer_radius > 0.0);
+    }
+
+    fn temp_dir(label: &str) -> std::path::PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "radial-preset-{}-{}",
+            std::process::id(),
+            label
+        ));
+        let _ = fs::remove_dir_all(&dir);
+        dir
+    }
+
+    #[test]
+    fn export_and_import_roundtrip_through_disk() {
+        let dir = temp_dir("roundtrip");
+        let path = dir.join("preset.json");
+        let path_str = path.to_string_lossy().to_string();
+        let config = default_config();
+
+        export_preset(path_str.clone(), config.clone()).expect("exporta");
+        assert!(path.exists());
+
+        let loaded = import_preset(path_str).expect("importa");
+        assert_eq!(loaded.items.len(), config.items.len());
+        assert_eq!(loaded.theme.accent, config.theme.accent);
+        assert_eq!(loaded.layout.menu_scale, config.layout.menu_scale);
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn rejects_files_above_the_size_limit() {
+        let dir = temp_dir("oversize");
+        fs::create_dir_all(&dir).expect("cria pasta");
+        let path = dir.join("big.json");
+        let payload = "a".repeat((MAX_PRESET_BYTES + 1) as usize);
+        fs::write(&path, payload).expect("grava");
+
+        let error = import_preset(path.to_string_lossy().to_string()).unwrap_err();
+        assert!(error.starts_with("Arquivo grande demais"));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn reports_missing_files() {
+        let error = import_preset(
+            std::env::temp_dir()
+                .join("radial-preset-nao-existe.json")
+                .to_string_lossy()
+                .to_string(),
+        )
+        .unwrap_err();
+        assert!(error.starts_with("Nao foi possivel abrir o arquivo"));
     }
 }
