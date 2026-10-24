@@ -169,5 +169,5 @@ As configurações reais do usuário ficam fora do repositório. Arquivos locais
 <br/>
 
 <div align="center">
-  <img src="https://count.getloli.com/get/@Rukafuu?theme=booru-lewd" alt="Moe Counter" />
+  <img src="https://count.getloli.com/get/@Radial?theme=gelbooru&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto" alt="Contador de visitas" />
 </div>
