@@ -7,11 +7,20 @@ Transformar o Frosted Radial Menu em um aplicativo OSS para Windows: leve, bonit
 ## Estado atual
 
 - Tauri 2 + React + TypeScript.
-- Atalho global `Alt+Space`.
-- Menu radial com submenus externos.
-- Painel de configuracao.
-- Configuracao persistida em JSON no diretorio do app do usuario.
-- Personalizacao visual persistida em `layout`:
+- Atalho global `Alt+Space`, re-registrado ao salvar (com aviso se estiver em uso).
+- Menu radial com submenus externos, estados distintos de hover, foco e seleção.
+- Painel de configuração v2 em 8 páginas (Geral, Aparência, Menu radial, Ações,
+  Submenus, Atalhos, Integrações, Sobre), com barra superior de estado das
+  alterações, Restaurar, Salvar e Fechar.
+- Rascunho único no painel: trocar de página não perde edição; ações destrutivas
+  pedem confirmação; a prévia do radial reage ao rascunho com relógio e CPU reais.
+- Design tokens em `src/styles/tokens.css` e primitivas reutilizáveis em
+  `src/components/ui` (base carvão/grafite, ciano/violeta/rosa pontuais).
+- Configuração persistida em JSON no diretório do app do usuário, com migração
+  automática do caminho antigo (Roaming → Local).
+- Auto-start via `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, sem admin,
+  com estado real exposto no painel.
+- Personalização visual persistida em `layout`:
   - escala geral;
   - raios e espessuras do menu principal;
   - distancia, largura e abertura dos submenus;
@@ -82,17 +91,20 @@ O layout visual deve ter:
 
 Implementado:
 
-- Criar/remover entrada no Task Scheduler.
-- Criar tarefa no logon para o usuario atual sem exigir `requireAdministrator`.
-- Criar atalho automatico na Area de Trabalho durante a instalacao.
+- Auto-start pela chave `Run` do usuário no registro
+  (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, valor `FrostedRadialMenu`),
+  sem exigir elevação.
+- Estado real do auto-start lido do registro e exibido no painel.
+- Atalho global configurável, re-registrado ao salvar; falha vira aviso, não silêncio.
+- Atalho da Área de Trabalho criado pelo instalador (hook NSIS).
 
 Ainda falta:
 
-- Criar/remover atalho na Area de Trabalho pelo painel de configuracao.
-- Mostrar status real da tarefa no painel de configuracao.
-- Alternativa de fallback em `HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`.
+- Criar/remover atalho na Área de Trabalho pelo painel de configuração.
+- Atalhos por ação (hoje existe apenas a combinação global).
 
-Preferencia tecnica: Task Scheduler, porque permite controlar melhor nome, permissao e argumentos.
+Histórico: a primeira versão usava `schtasks /sc onlogon`, que exige administrador
+e falhava com "Acesso negado" de forma silenciosa. Foi substituída pelo registro.
 
 ## Icone do aplicativo
 
@@ -123,21 +135,29 @@ Direcao visual sugerida:
 
 ## Roadmap tecnico
 
-- Corrigir todos os fluxos de janela: abrir, esconder, reabrir e tray.
-- Melhorar editor de configuracao:
-  - reordenar itens;
-  - duplicar grupo;
-  - testar acao;
-  - importar/exportar preset.
-- Adicionar auto-start real.
-- Adicionar criacao de atalho na Area de Trabalho.
-- Adicionar seletor de arquivo/pasta nativo.
-- Adicionar suporte a icones customizados locais com copia para pasta do app.
-- Adicionar gerador de preset inicial baseado no PC:
+Concluido:
+
+- Fluxos de janela: abrir, esconder, reabrir e tray.
+- Reordenar itens e submenus por arrastar-e-soltar no painel.
+- Duplicar item com os filhos.
+- Auto-start real e status no painel.
+- Suporte a ícones customizados locais (com fallback para o ícone interno).
+- Painel v2 com páginas por categoria e prévia ao vivo.
+
+Pendente:
+
+- Importar/exportar preset de configuração.
+- Botão "testar ação" no editor.
+- Seletor nativo de arquivo/pasta para os campos de destino.
+- Criar/remover atalho na Área de Trabalho pelo painel.
+- Gerador de preset inicial baseado no PC:
   - detectar VS Code;
   - detectar navegadores;
   - detectar pastas comuns;
   - detectar apps conhecidos sem enviar dados para fora.
+- Atalhos por ação.
+- Coleta real de GPU; widget de mídia; tema claro; wallpaper; dock e painéis
+  flutuantes (dependem de backend/modelo de config novo).
 
 ## Cuidado com seguranca
 

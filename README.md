@@ -142,8 +142,9 @@ As configurações reais do usuário ficam fora do repositório. Arquivos locais
 
 - [ ] Criar/remover atalho na Área de Trabalho pelo painel de configurações.
 - [ ] Importar e exportar presets de personalização.
-- [ ] Reordenar fatias e submenus diretamente no painel.
+- [x] Reordenar fatias e submenus diretamente no painel (arrastar-e-soltar).
 - [ ] Detectar aplicativos comuns do PC do usuário para montar um preset inicial automatizado.
+- [ ] Atalhos por ação (hoje só existe a combinação global).
 
 ---
 
