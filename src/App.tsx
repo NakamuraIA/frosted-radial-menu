@@ -1,8 +1,9 @@
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { RadialMenu } from './components/RadialMenu'
-import { SettingsPanel } from './components/SettingsPanel'
-import './App.css'
+import { RadialMenu } from './components/radial/RadialMenu';
+import { SettingsPanel } from './components/settings/SettingsPanel';
+import './styles/app.css';
 
+/** Cada janela do Tauri carrega a mesma SPA com um componente diferente. */
 function getWindowLabel() {
   const previewLabel = new URLSearchParams(window.location.search).get('window');
   if (previewLabel) return previewLabel;
@@ -25,7 +26,7 @@ function App() {
     <div className="app-wrapper">
       <RadialMenu />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

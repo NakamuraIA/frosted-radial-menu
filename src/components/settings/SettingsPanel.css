@@ -114,6 +114,13 @@ button {
   text-align: center;
 }
 
+.status-chip.is-warning {
+  border-color: rgba(255, 207, 90, 0.4);
+  background: rgba(255, 207, 90, 0.1);
+  color: #ffd979 !important;
+  cursor: help;
+}
+
 .settings-layout {
   min-height: 0;
   flex: 1;
@@ -476,6 +483,19 @@ input[type='range'] {
   width: 18px;
   height: 18px;
   accent-color: #23e6ff;
+}
+
+.field-hint {
+  display: block;
+  margin-top: -4px;
+  text-transform: none;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.field-hint.is-on {
+  color: rgba(66, 255, 181, 0.78);
 }
 
 .empty-editor {

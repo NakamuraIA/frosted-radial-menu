@@ -21,6 +21,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
+/** Nomes persistidos no JSON → componentes do lucide. */
 export const iconRegistry: Record<string, LucideIcon> = {
   terminal: Terminal,
   folder: FolderOpen,
