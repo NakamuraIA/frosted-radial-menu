@@ -143,10 +143,11 @@ Concluido:
 - Auto-start real e status no painel.
 - Suporte a ícones customizados locais (com fallback para o ícone interno).
 - Painel v2 com páginas por categoria e prévia ao vivo.
+- Importar/exportar preset em JSON pelo painel (diálogo nativo, validação na
+  importação, limite de 1 MB, recusa preset vazio).
 
 Pendente:
 
-- Importar/exportar preset de configuração.
 - Botão "testar ação" no editor.
 - Seletor nativo de arquivo/pasta para os campos de destino.
 - Criar/remover atalho na Área de Trabalho pelo painel.
