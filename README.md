@@ -47,13 +47,27 @@
 
 ## 📂 Estrutura do Projeto
 
-- `src/`: Interface React.
-  - `src/components/RadialMenu.tsx`: Menu principal.
-  - `src/components/SettingsPanel.tsx`: Painel de configuração.
-  - `src/lib/menuConfig.ts`: Tipos e configuração padrão.
-- `src-tauri/src/lib.rs`: Comandos Rust (tray, hotkey, config, hardware stats).
-- `src-tauri/tauri.conf.json`: Configuração central do app Tauri.
-- `docs/PLAN.md`: Plano de produto, distribuição e portabilidade.
+**Frontend** (`src/`)
+
+- `components/radial/`: menu — `RadialMenu` (container), `RadialCanvas`, `MainSlice`, `SubmenuSlices`, `CenterDashboard`, `SliceContent` e `geometry.ts`.
+- `components/settings/`: painel — `SettingsPanel` (container), `ItemsPanel`, `ActionEditor`, `AppearancePanel`, `SettingsHeader`, `RangeField`.
+- `components/common/`: `CustomIcon` e `renderIcon` compartilhados.
+- `hooks/`: `useRadialConfig`, `useSystemStats`, `useClock`, `useMenuVisibility`.
+- `lib/config/`: tipos, opções, defaults, normalização e operações de árvore.
+- `lib/`: `api.ts` (wrapper tipado do `invoke`), `icons/`, `format.ts`, `id.ts`.
+- `styles/`: CSS global (`index.css`) e do app (`app.css`).
+
+**Backend** (`src-tauri/src/`)
+
+- `lib.rs`: só a montagem do `Builder` (estado, plugin, comandos, setup).
+- `commands/`: superfície `invoke` — valida e delega.
+- `config/`: `model`, `defaults` e `store` (JSON + migração de caminho).
+- `menu/`: `actions` (dispatch) e `shell` (PowerShell/CMD).
+- `platform/`: `hotkey` (atalho global) e `autostart` (`HKCU\...\Run`).
+- `system/`: métricas de CPU/RAM.
+- `ui/`: `windows`, `placement` (clamp no monitor) e `tray`.
+
+Outros: `src-tauri/tauri.conf.json` (config central), `docs/PLAN.md` (plano de produto).
 
 ---
 
@@ -85,6 +99,7 @@ npm run lint
 npm run build
 cd src-tauri
 cargo check
+cargo test
 ```
 
 ---
