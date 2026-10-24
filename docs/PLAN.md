@@ -148,11 +148,11 @@ Concluido:
 - Modo de janela por ação: `show` abre um único terminal (PowerShell ou CMD,
   sem shell intermediário) e `hide` executa sem janela para comandos que já
   abrem as próprias janelas.
+- Botão "testar ação" no editor: executa o item do rascunho antes de salvar.
+- Seletor nativo de arquivo/pasta nos campos de destino e pasta de trabalho.
 
 Pendente:
 
-- Botão "testar ação" no editor.
-- Seletor nativo de arquivo/pasta para os campos de destino.
 - Criar/remover atalho na Área de Trabalho pelo painel.
 - Gerador de preset inicial baseado no PC:
   - detectar VS Code;

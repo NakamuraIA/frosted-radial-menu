@@ -3,6 +3,16 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Adicionado
+
+- **Testar ação** no editor: executa o item do rascunho (mesmo não salvo) e mostra
+  sucesso/erro inline. Submenus e itens sem ação ficam desabilitados.
+- **Seletor nativo** de arquivo/pasta nos campos de caminho, comando e pasta de trabalho.
+- Aviso na página Ações quando existem itens além do limite de fatias do radial.
+- Limites compartilhados em `src/lib/config/limits.ts` (10 fatias, 8 filhos).
+
 ## [1.1.0] — 2026-10-24
 
 ### Adicionado

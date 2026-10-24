@@ -85,6 +85,8 @@ Antes de commitar: `npm run lint` + `npm run test` + `cargo test`. Commits peque
     `windowMode: "hide"`; caso contrário o usuário vê um terminal extra vazio. No modo
     visível, o shell é iniciado direto com `CREATE_NEW_CONSOLE` — não volte a usar um
     PowerShell intermediário com `Start-Process` (gera duas janelas).
+11. Limites do radial ficam em `src/lib/config/limits.ts` (`MAX_MAIN_SLICES = 10`,
+    `MAX_SUBMENU_ITEMS = 8`). Menu, painel e preview importam de lá — não duplique o número.
 
 ## Armadilhas conhecidas
 
