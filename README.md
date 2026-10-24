@@ -2,7 +2,7 @@
 
 # 🌌 Frosted Radial Menu
 
-<img src="src-tauri/icons/Nakamura_Radial_ScHWpmtWXW.png" alt="Frosted Radial Menu Preview" width="500" style="border-radius: 12px; border: 1px solid #444; box-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 20px;" />
+<img src="docs/screenshots/hero.png" alt="Menu radial com submenu aberto" width="560" style="border-radius: 16px; margin-bottom: 16px;" />
 
 **Launcher radial desktop para Windows, com design futurista e alta performance.**
 
@@ -37,8 +37,6 @@
 ## 📸 Capturas
 
 <div align="center">
-
-![Menu radial](docs/screenshots/menu.png)
 
 ![Configurações — Geral](docs/screenshots/settings-geral.png)
 
