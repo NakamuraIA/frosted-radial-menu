@@ -32,6 +32,7 @@ use crate::state::AppState;
 pub fn run() {
     tauri::Builder::default()
         .manage(AppState::new())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(move |app, _request, event| {
@@ -50,6 +51,8 @@ pub fn run() {
             commands::windows::hide_settings_window,
             commands::autostart::get_autostart_status,
             commands::system::get_system_stats,
+            commands::presets::export_preset,
+            commands::presets::import_preset,
         ])
         .on_window_event(|window, event| ui::windows::handle_window_event(window, event))
         .setup(|app| {

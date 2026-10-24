@@ -7,6 +7,7 @@
     "settings"
   ],
   "permissions": [
-    "core:default"
+    "core:default",
+    "dialog:default"
   ]
 }

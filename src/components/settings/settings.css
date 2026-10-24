@@ -593,6 +593,41 @@ details.diagnostics pre {
   font-weight: var(--weight-semibold);
 }
 
+/* Dica sob um controle (ex.: estado real do auto-start no Windows). */
+.field-hint {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.field-hint.is-on {
+  color: var(--success);
+}
+
+/* Retorno das ações de preset (exportar/importar). */
+.preset-message {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.preset-message.is-success {
+  border-color: rgba(74, 222, 155, 0.35);
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.preset-message.is-danger {
+  border-color: rgba(255, 92, 122, 0.35);
+  background: var(--danger-soft);
+  color: #ff9aab;
+}
+
 @media (max-width: 1040px) {
   .page-grid {
     grid-template-columns: minmax(0, 1fr);

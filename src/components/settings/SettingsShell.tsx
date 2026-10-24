@@ -96,7 +96,14 @@ export function SettingsShell() {
   const pageContent = (() => {
     switch (page) {
       case 'geral':
-        return <GeneralPage config={draft} update={update} autostartActive={autostartActive} />;
+        return (
+          <GeneralPage
+            config={draft}
+            update={update}
+            autostartActive={autostartActive}
+            dirty={dirty}
+          />
+        );
       case 'aparencia':
         return <AppearancePage config={draft} update={update} />;
       case 'menu':

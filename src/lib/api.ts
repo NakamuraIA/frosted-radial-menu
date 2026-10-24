@@ -26,4 +26,11 @@ export const api = {
   getAutostartStatus: () => invoke<boolean>('get_autostart_status'),
 
   getSystemStats: () => invoke<SystemStats>('get_system_stats'),
+
+  /** Grava a configuração atual como preset JSON no caminho escolhido. */
+  exportPreset: (path: string, config: RadialConfig) =>
+    invoke<void>('export_preset', { path, config }),
+
+  /** Lê e valida um preset; erro se o arquivo não for uma configuração válida. */
+  importPreset: (path: string) => invoke<RadialConfig>('import_preset', { path }),
 };

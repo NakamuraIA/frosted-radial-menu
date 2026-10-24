@@ -1,23 +1,82 @@
-import { Power, RotateCcw, ShieldAlert } from 'lucide-react';
+import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
+import { Download, FileJson, Power, RotateCcw, ShieldAlert, Upload } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button, Card, ConfirmDialog, PageHeader, Switch } from '../../ui';
-import { FALLBACK_CONFIG } from '../../../lib/config';
+import { api } from '../../../lib/api';
+import { FALLBACK_CONFIG, type RadialConfig } from '../../../lib/config';
 import type { PageProps } from './types';
 
 interface GeneralPageProps extends PageProps {
   autostartActive: boolean | null;
+  dirty: boolean;
 }
 
-/** Página Geral: inicialização, execução e manutenção. */
-export function GeneralPage({ config, update, autostartActive }: GeneralPageProps) {
+interface PresetMessage {
+  tone: 'success' | 'danger';
+  text: string;
+}
+
+/** Página Geral: inicialização, execução, presets e manutenção. */
+export function GeneralPage({ config, update, autostartActive, dirty }: GeneralPageProps) {
   const [confirmReset, setConfirmReset] = useState(false);
+  const [pendingPreset, setPendingPreset] = useState<RadialConfig | null>(null);
+  const [presetMessage, setPresetMessage] = useState<PresetMessage | null>(null);
 
   const patchPreference = (patch: Partial<(typeof config)['preferences']>) => {
     update((current) => ({
       ...current,
       preferences: { ...current.preferences, ...patch },
     }));
+  };
+
+  const applyPreset = (preset: RadialConfig) => {
+    update(() => preset);
+    setPendingPreset(null);
+    setPresetMessage({
+      tone: 'success',
+      text: 'Preset importado. Revise as páginas e clique em Salvar para aplicar.',
+    });
+  };
+
+  const errorText = (error: unknown) =>
+    error instanceof Error ? error.message : String(error);
+
+  const handleExport = async () => {
+    try {
+      const path = await saveDialog({
+        title: 'Exportar preset',
+        defaultPath: 'frosted-radial-preset.json',
+        filters: [{ name: 'Preset JSON', extensions: ['json'] }],
+      });
+      if (!path) return;
+
+      await api.exportPreset(path, config);
+      setPresetMessage({ tone: 'success', text: `Preset exportado: ${path}` });
+    } catch (error) {
+      setPresetMessage({ tone: 'danger', text: `Falha ao exportar: ${errorText(error)}` });
+    }
+  };
+
+  const handleImport = async () => {
+    try {
+      const selected = await openDialog({
+        title: 'Importar preset',
+        multiple: false,
+        directory: false,
+        filters: [{ name: 'Preset JSON', extensions: ['json'] }],
+      });
+      if (!selected || Array.isArray(selected)) return;
+
+      const imported = await api.importPreset(selected);
+      if (dirty) {
+        setPendingPreset(imported);
+        return;
+      }
+      applyPreset(imported);
+    } catch (error) {
+      setPresetMessage({ tone: 'danger', text: `Falha ao importar: ${errorText(error)}` });
+    }
   };
 
   return (
@@ -70,6 +129,30 @@ export function GeneralPage({ config, update, autostartActive }: GeneralPageProp
       </Card>
 
       <Card
+        title="Backup e presets"
+        description="Leve a configuração para outra máquina ou guarde uma cópia."
+        icon={<FileJson size={16} />}
+      >
+        <p className="page-hint">
+          O preset inclui ações, aparência e geometria. A importação valida o arquivo antes de
+          aplicar e nunca aceita um preset vazio.
+        </p>
+        <div className="ui-inline">
+          <Button icon={<Download size={15} />} onClick={() => void handleExport()}>
+            Exportar preset
+          </Button>
+          <Button icon={<Upload size={15} />} onClick={() => void handleImport()}>
+            Importar preset
+          </Button>
+        </div>
+        {presetMessage ? (
+          <p className={`preset-message is-${presetMessage.tone}`} role="status">
+            {presetMessage.text}
+          </p>
+        ) : null}
+      </Card>
+
+      <Card
         title="Manutenção"
         description="Volta a configuração ao padrão de fábrica."
         icon={<RotateCcw size={16} />}
@@ -96,6 +179,18 @@ export function GeneralPage({ config, update, autostartActive }: GeneralPageProp
           setConfirmReset(false);
         }}
         onCancel={() => setConfirmReset(false)}
+      />
+
+      <ConfirmDialog
+        open={Boolean(pendingPreset)}
+        title="Substituir alterações não salvas?"
+        description="O preset importado vai substituir o rascunho atual. Se preferir, cancele, salve o que está editando e importe de novo."
+        confirmLabel="Substituir"
+        tone="danger"
+        onConfirm={() => {
+          if (pendingPreset) applyPreset(pendingPreset);
+        }}
+        onCancel={() => setPendingPreset(null)}
       />
     </div>
   );
