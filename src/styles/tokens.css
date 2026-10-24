@@ -1,0 +1,112 @@
+/**
+ * Design tokens do Frosted Radial Menu v2.
+ *
+ * Regra: nenhum componente deve usar cor/espaço literal — tudo sai daqui.
+ * A paleta evita azul saturado: base carvão/grafite, acentos pontuais em ciano
+ * e violeta, rosa só em seleção/destaque.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Superfícies */
+  --bg-base: #080e14;
+  --bg-panel: #0c1219;
+  --bg-surface: #111722;
+  --bg-raised: #191f2b;
+  --bg-input: #0a1017;
+  --bg-hover: rgba(255, 255, 255, 0.04);
+  --bg-active: rgba(255, 255, 255, 0.07);
+  --overlay: rgba(4, 7, 11, 0.72);
+
+  /* Bordas */
+  --border-subtle: rgba(255, 255, 255, 0.055);
+  --border-default: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Texto */
+  --text-primary: #e8ecf4;
+  --text-secondary: #9aa5b8;
+  --text-muted: #66707f;
+  --text-inverse: #080e14;
+
+  /* Acentos */
+  --accent: #43c7d9;
+  --accent-strong: #63d6e6;
+  --accent-soft: rgba(67, 199, 217, 0.12);
+  --accent-line: rgba(67, 199, 217, 0.34);
+  --violet: #a78bfa;
+  --violet-soft: rgba(167, 139, 250, 0.14);
+  --violet-line: rgba(167, 139, 250, 0.38);
+  --pink: #e879d8;
+  --pink-soft: rgba(232, 121, 216, 0.14);
+  --danger: #ff5c7a;
+  --danger-soft: rgba(255, 92, 122, 0.12);
+  --success: #4ade9b;
+  --success-soft: rgba(74, 222, 155, 0.12);
+  --warning: #f2c46d;
+  --warning-soft: rgba(242, 196, 109, 0.12);
+
+  /* Tipografia */
+  --font-ui: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Segoe UI Variable Display', 'Segoe UI Semibold', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Cascadia Code', 'Consolas', ui-monospace, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-lg: 15px;
+  --text-xl: 19px;
+  --text-2xl: 24px;
+
+  --weight-regular: 400;
+  --weight-medium: 520;
+  --weight-semibold: 620;
+  --weight-bold: 720;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+
+  /* Espaçamento (base 4px) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Raios */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-full: 999px;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.42);
+  --focus-ring: 0 0 0 2px rgba(67, 199, 217, 0.55);
+  --focus-ring-violet: 0 0 0 2px rgba(167, 139, 250, 0.55);
+
+  /* Movimento */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 240ms;
+
+  /* Layout da janela de configurações */
+  --sidebar-width: 216px;
+  --topbar-height: 56px;
+  --content-max: 1080px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 1ms;
+    --duration-base: 1ms;
+    --duration-slow: 1ms;
+  }
+}

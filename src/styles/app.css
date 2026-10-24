@@ -1,10 +1,11 @@
+/* Janela do menu radial: fundo sempre transparente para o overlay. */
 .app-wrapper {
   width: 100vw;
   height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: transparent;
+  justify-content: center;
   overflow: hidden;
+  background: transparent;
   user-select: none;
 }

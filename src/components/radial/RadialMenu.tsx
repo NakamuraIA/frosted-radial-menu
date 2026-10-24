@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState, type CSSProperties } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { CenterDashboard } from './CenterDashboard';
 import { RadialCanvas } from './RadialCanvas';
+import { buildRadialThemeVars } from './themeVars';
 import { useClock } from '../../hooks/useClock';
 import { useMenuVisibility } from '../../hooks/useMenuVisibility';
 import { useRadialConfig } from '../../hooks/useRadialConfig';
@@ -69,18 +70,7 @@ export function RadialMenu() {
     await hide();
   }, [activeParentId, hide, setActiveParentId]);
 
-  const themeVars = {
-    '--accent': config.theme.accent,
-    '--accent-alt': config.theme.accentAlt,
-    '--danger': config.theme.danger,
-    '--glass-opacity': String(config.theme.glassOpacity),
-    '--anim-speed': String(config.theme.animationSpeed),
-    '--menu-scale': String(layout.menuScale),
-    '--menu-font-family': layout.fontFamily,
-    '--slice-border-width': `${layout.borderWidth}px`,
-    '--glow-intensity': String(layout.glowIntensity),
-    '--center-size': `${layout.centerSize}px`,
-  } as CSSProperties;
+  const themeVars = buildRadialThemeVars(config.theme, layout);
 
   return (
     <div className={`radial-shell ${isOpen ? 'is-open' : ''}`} style={themeVars}>
