@@ -15,7 +15,8 @@ interface MainSliceProps {
   index: number;
   total: number;
   layout: LayoutConfig;
-  isHighlighted: boolean;
+  isHovered: boolean;
+  isActive: boolean;
   onHover: (id: string | null) => void;
   onSelect: (item: MenuItemConfig) => void;
 }
@@ -26,7 +27,8 @@ export function MainSlice({
   index,
   total,
   layout,
-  isHighlighted,
+  isHovered,
+  isActive,
   onHover,
   onSelect,
 }: MainSliceProps) {
@@ -37,10 +39,17 @@ export function MainSlice({
     midAngle,
   );
   const chevronPosition = getChevronPosition(layout.mainOuterRadius, midAngle);
+  const highlighted = isHovered || isActive;
 
   return (
     <g
-      className={`slice-group ${isHighlighted ? 'is-hovered' : ''}`}
+      className={[
+        'slice-group',
+        isHovered ? 'is-hovered' : '',
+        isActive ? 'is-active' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       onMouseEnter={() => onHover(item.id)}
       onMouseLeave={() => onHover(null)}
       onClick={() => onSelect(item)}
@@ -63,7 +72,7 @@ export function MainSlice({
           endAngle,
           layout.mainGap,
         )}
-        fill={isHighlighted ? 'url(#slice-hot)' : 'url(#slice-glass)'}
+        fill={highlighted ? 'url(#slice-hot)' : 'url(#slice-glass)'}
       />
       <foreignObject
         x={labelPosition.x - 62}
@@ -72,7 +81,7 @@ export function MainSlice({
         height="94"
         className="slice-foreign"
       >
-        <SliceContent item={item} isHovered={isHighlighted} size="main" layout={layout} />
+        <SliceContent item={item} isHovered={highlighted} size="main" layout={layout} />
       </foreignObject>
 
       {item.children?.length ? (

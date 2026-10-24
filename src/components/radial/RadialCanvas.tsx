@@ -35,22 +35,15 @@ export function RadialCanvas({
     >
       <defs>
         <radialGradient id="slice-glass" cx="45%" cy="32%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.34)" />
-          <stop offset="46%" stopColor="rgba(67,86,112,0.34)" />
-          <stop offset="100%" stopColor="rgba(4,8,18,0.78)" />
+          <stop offset="0%" stopColor="rgba(255,255,255,0.14)" />
+          <stop offset="50%" stopColor="rgba(48,62,82,0.22)" />
+          <stop offset="100%" stopColor="rgba(6,10,16,0.82)" />
         </radialGradient>
         <radialGradient id="slice-hot" cx="42%" cy="22%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.5)" />
-          <stop offset="50%" stopColor="rgba(35,230,255,0.24)" />
-          <stop offset="100%" stopColor="rgba(4,8,18,0.72)" />
+          <stop offset="0%" stopColor="rgba(255,255,255,0.22)" />
+          <stop offset="55%" stopColor="rgba(67,199,217,0.14)" />
+          <stop offset="100%" stopColor="rgba(6,10,16,0.8)" />
         </radialGradient>
-        <filter id="neon-glow" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="5" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
       </defs>
 
       <circle
@@ -80,7 +73,8 @@ export function RadialCanvas({
             index={index}
             total={items.length}
             layout={layout}
-            isHighlighted={hoveredId === item.id || activeParentId === item.id}
+            isHovered={hoveredId === item.id}
+            isActive={activeParentId === item.id}
             onHover={onHover}
             onSelect={onSelect}
           />
