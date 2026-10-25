@@ -133,6 +133,10 @@ pub fn run_shell_action(action: &MenuItemConfig, run_as_admin: bool) -> Result<(
 
     let (program, args) = shell_command(shell, &command_line, hidden);
 
+    #[cfg(not(windows))]
+    let _ = run_as_admin;
+
+    #[cfg(windows)]
     if run_as_admin {
         let argument_list = args
             .iter()
@@ -213,11 +217,26 @@ mod tests {
     }
 
     #[test]
+    fn expands_an_existing_variable_on_any_platform() {
+        let expanded = expand_env_vars("%PATH%");
+        assert!(!expanded.contains("%PATH%"), "nao expandiu: {expanded}");
+        assert!(!expanded.trim().is_empty());
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn uses_bash_on_unix() {
+        let (program, args) = shell_command("cmd", "echo hi", false);
+        assert_eq!(program, "bash");
+        assert_eq!(args, vec!["-lc".to_string(), "echo hi".to_string()]);
+    }
+    #[test]
     fn quotes_single_quotes_for_powershell() {
         assert_eq!(ps_single_quote("it's"), "'it''s'");
         assert_eq!(ps_single_quote("%USERPROFILE%\\Desktop"), "'%USERPROFILE%\\Desktop'");
     }
 
+    #[cfg(windows)]
     #[test]
     fn expands_known_environment_variables() {
         let expanded = expand_env_vars("%WINDIR%");
@@ -225,6 +244,7 @@ mod tests {
         assert!(expanded.len() > 3);
     }
 
+    #[cfg(windows)]
     #[test]
     fn expansion_is_case_insensitive_like_windows() {
         let upper = expand_env_vars("%WINDIR%");
@@ -235,6 +255,7 @@ mod tests {
         assert_eq!(upper, mixed);
     }
 
+    #[cfg(windows)]
     #[test]
     fn expands_variables_inside_larger_paths() {
         let expanded = expand_env_vars("%USERPROFILE%\\Desktop");
@@ -254,6 +275,7 @@ mod tests {
         assert_eq!(error, "Nenhum comando configurado para esta acao.");
     }
 
+    #[cfg(windows)]
     #[test]
     fn cmd_shell_keeps_the_window_open_when_visible() {
         let (program, args) = shell_command("cmd", "echo hi", false);
@@ -261,12 +283,14 @@ mod tests {
         assert_eq!(args, vec!["/K".to_string(), "echo hi".to_string()]);
     }
 
+    #[cfg(windows)]
     #[test]
     fn cmd_shell_exits_when_hidden() {
         let (_, args) = shell_command("cmd", "echo hi", true);
         assert_eq!(args[0], "/C");
     }
 
+    #[cfg(windows)]
     #[test]
     fn powershell_shell_is_the_default_and_stays_open() {
         let (program, args) = shell_command("qualquer", "echo hi", false);
@@ -275,6 +299,7 @@ mod tests {
         assert_eq!(args.last().unwrap(), "echo hi");
     }
 
+    #[cfg(windows)]
     #[test]
     fn powershell_hidden_omits_no_exit() {
         let (_, args) = shell_command("qualquer", "echo hi", true);
