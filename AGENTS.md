@@ -12,7 +12,7 @@ custaram tempo para descobrir. Leia antes de mexer no código.
 | React / Vite | 19.3.1 / 8.3.5 | — |
 | TypeScript | **6.0.3** | `typescript-eslint` declara peer `<6.1.0`; não subir para 7 |
 | sysinfo | **0.38.4** | 0.39 exige rustc 1.95; o toolchain da máquina é 1.94.1 |
-| windows-sys / winreg | 0.61.2 / 0.55 | registro do Windows para auto-start |
+| winreg | 0.55 | só Windows: auto-start no registro (Windows: 0.61.2 / 0.55 virou winreg isolado; windows-sys saiu) |
 
 Versão do app é **1.4.0** em `package.json`, `src-tauri/Cargo.toml` e
 `src-tauri/tauri.conf.json` — mantenha os três alinhados.

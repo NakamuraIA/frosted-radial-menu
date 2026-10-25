@@ -146,6 +146,25 @@ O app **não** precisa de Node.js ou Rust no computador do usuário final. Essas
 
 ---
 
+## 🐧 Linux (experimental)
+
+O backend já **compila e passa nos testes no Linux** (job `Linux` do CI, `ubuntu-latest`). A interface é a mesma (Tauri + WebKitGTK), mas o app ainda é **Windows-first**: atalho global, bandeja e transparência dependem do compositor.
+
+```bash
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libgtk-3-dev
+
+npm ci
+npm run build
+cargo test --manifest-path src-tauri/Cargo.toml          # 52 testes
+npm run tauri build -- --bundles deb,appimage            # gera .deb/.AppImage
+```
+
+Limitações conhecidas: `windowMode: "show"` não abre terminal próprio (roda `bash -lc`), a elevação (`runCommandsAsAdmin`) é ignorada, auto-start/atalho de Desktop retornam erro explicativo e o overlay pode ficar sem transparência em ambientes sem compositor.
+
+---
+
 ## 🌍 Portabilidade
 
 Este projeto foi desenhado para **não** depender de caminhos específicos do computador do desenvolvedor. Utilize variáveis de ambiente do Windows nas configurações para garantir que funcione em qualquer máquina:

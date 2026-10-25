@@ -13,6 +13,10 @@ Versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 - `npm run qa:smoke`: smoke E2E versionado (`scripts/qa/smoke.mjs`) que valida a
   janela instalada via CDP — navegação, botão Testar ação, seletores nativos e
   comandos de status.
+- Port mínimo para Linux: `cursor_position` do Tauri no lugar de `GetCursorPos`
+  (remove `windows-sys`), `winreg` só no Windows, shell `bash -lc` no unix e
+  job `Linux` no CI (`ubuntu-latest`, WebKitGTK) rodando `cargo check` e
+  `cargo test` — 52 testes passando nos dois sistemas.
 
 ## [1.4.0] — 2026-10-24
 
