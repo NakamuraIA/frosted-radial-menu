@@ -12,6 +12,8 @@ Versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 - **Seletor nativo** de arquivo/pasta nos campos de caminho, comando e pasta de trabalho.
 - Aviso na página Ações quando existem itens além do limite de fatias do radial.
 - Limites compartilhados em `src/lib/config/limits.ts` (10 fatias, 8 filhos).
+- **Error boundary** nas duas janelas: falha de render mostra erro + botão de
+  recarregar em vez de deixar a janela em branco.
 
 ## [1.1.0] — 2026-10-24
 
