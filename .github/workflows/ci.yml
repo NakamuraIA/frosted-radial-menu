@@ -69,3 +69,38 @@ jobs:
 
       - name: cargo test
         run: cargo test --manifest-path src-tauri/Cargo.toml
+
+  linux:
+    name: Linux (cargo check + testes)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependências do sistema (WebKitGTK)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libgtk-3-dev
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Buildar frontend para o codegen do Tauri
+        run: |
+          npm ci
+          npm run build
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: cargo check
+        run: cargo check --manifest-path src-tauri/Cargo.toml --all-targets
+
+      - name: cargo test
+        run: cargo test --manifest-path src-tauri/Cargo.toml

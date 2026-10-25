@@ -61,7 +61,6 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-dialog",
  "tauri-plugin-global-shortcut",
- "windows-sys 0.61.2",
  "winreg",
 ]
 

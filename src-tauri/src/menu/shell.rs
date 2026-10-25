@@ -46,6 +46,7 @@ pub fn expand_env_vars(input: &str) -> String {
 }
 
 /// Escapa um valor para ser usado como literal single-quoted no PowerShell.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub fn ps_single_quote(value: &str) -> String {
     format!("'{}'", value.replace('\'', "''"))
 }
@@ -61,7 +62,9 @@ pub fn should_hide_window(action: &MenuItemConfig) -> bool {
 
 /// Monta a linha de inicialização do shell escolhido.
 ///
-/// Em modo oculto não usamos `/K` nem `-NoExit`: o processo precisa terminar.
+/// No Windows, em modo oculto não usamos `/K` nem `-NoExit`: o processo precisa
+/// terminar. No Linux/macOS o comando roda em `bash -lc`.
+#[cfg(windows)]
 pub fn shell_command(shell: &str, command_line: &str, hidden: bool) -> (&'static str, Vec<String>) {
     if shell.eq_ignore_ascii_case("cmd") {
         let flag = if hidden { "/C" } else { "/K" };
@@ -80,6 +83,11 @@ pub fn shell_command(shell: &str, command_line: &str, hidden: bool) -> (&'static
         ]);
         ("powershell.exe", args)
     }
+}
+
+#[cfg(not(windows))]
+pub fn shell_command(_shell: &str, command_line: &str, _hidden: bool) -> (&'static str, Vec<String>) {
+    ("bash", vec!["-lc".to_string(), command_line.to_string()])
 }
 
 #[cfg(windows)]

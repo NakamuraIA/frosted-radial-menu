@@ -8,7 +8,7 @@ pub const MAIN_WINDOW: &str = "main";
 pub const SETTINGS_WINDOW: &str = "settings";
 
 pub fn show_main_window_at_cursor(window: &WebviewWindow) -> Result<(), String> {
-    let point = current_cursor_position();
+    let point = current_cursor_position(window);
     window
         .set_position(tauri::Position::Physical(clamped_window_position(window, point)))
         .map_err(|error| error.to_string())?;

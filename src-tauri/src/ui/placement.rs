@@ -1,14 +1,19 @@
 //! Posicionamento da janela do menu em relação ao cursor.
+//!
+//! Usa a API do Tauri (multiplataforma) em vez de `GetCursorPos`, então o mesmo
+//! código vale para Windows, Linux e macOS.
 
 use tauri::{PhysicalPosition, WebviewWindow};
-use windows_sys::Win32::Foundation::POINT;
-use windows_sys::Win32::UI::WindowsAndMessaging::GetCursorPos;
 
-/// Posição atual do cursor em coordenadas físicas.
-pub fn current_cursor_position() -> POINT {
-    let mut point = POINT { x: 0, y: 0 };
-    unsafe { GetCursorPos(&mut point) };
-    point
+/// Posição atual do cursor em coordenadas físicas globais.
+pub fn current_cursor_position(window: &WebviewWindow) -> PhysicalPosition<i32> {
+    match window.cursor_position() {
+        Ok(position) => PhysicalPosition::new(
+            position.x.round() as i32,
+            position.y.round() as i32,
+        ),
+        Err(_) => PhysicalPosition::new(0, 0),
+    }
 }
 
 /// Mantém a janela inteira dentro do monitor, mesmo quando o cursor está na borda.
@@ -29,7 +34,10 @@ pub fn clamp_to_monitor(
 }
 
 /// Centraliza a janela no cursor e a mantém visível no monitor mais próximo.
-pub fn clamped_window_position(window: &WebviewWindow, point: POINT) -> PhysicalPosition<i32> {
+pub fn clamped_window_position(
+    window: &WebviewWindow,
+    point: PhysicalPosition<i32>,
+) -> PhysicalPosition<i32> {
     let size = window.outer_size().ok();
     let width = size.map(|size| size.width as i32).unwrap_or(600);
     let height = size.map(|size| size.height as i32).unwrap_or(600);
