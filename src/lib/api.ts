@@ -18,8 +18,7 @@ export const api = {
   runMenuAction: (actionId: string) => invoke<void>('run_menu_action', { actionId }),
 
   /** Testa um item do rascunho sem salvar (botão "Testar ação"). */
-  runActionPreview: (item: MenuItemConfig, runAsAdmin: boolean) =>
-    invoke<void>('run_action_preview', { item, runAsAdmin }),
+  runActionPreview: (item: MenuItemConfig) => invoke<void>('run_action_preview', { item }),
 
   openSettingsWindow: () => invoke<void>('open_settings_window'),
 

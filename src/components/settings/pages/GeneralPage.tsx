@@ -102,7 +102,14 @@ export function GeneralPage({ config, update, autostartActive, dirty }: GeneralP
     });
   };
 
-  const errorText = (error: unknown) =>
+  const presetCommands = (preset: RadialConfig | null) =>
+  preset
+    ? flattenMenuItems(preset.items)
+        .map(({ item }) => item)
+        .filter((item) => item.actionType === 'runCommand' && item.value?.trim())
+        .map((item) => ({ label: item.label, value: item.value?.trim() ?? '' }))
+    : [];
+const errorText = (error: unknown) =>
     error instanceof Error ? error.message : String(error);
 
   const detectApps = async () => {
@@ -211,11 +218,20 @@ export function GeneralPage({ config, update, autostartActive, dirty }: GeneralP
       if (!selected || Array.isArray(selected)) return;
 
       const imported = await api.importPreset(selected);
+      // Preset de fora nunca liga execução como admin: quem decide é a config salva.
+      const sanitized: RadialConfig = {
+        ...imported,
+        preferences: {
+          ...imported.preferences,
+          runCommandsAsAdmin: config.preferences.runCommandsAsAdmin,
+        },
+      };
+
       if (dirty) {
-        setPendingPreset(imported);
+        setPendingPreset(sanitized);
         return;
       }
-      applyPreset(imported);
+      applyPreset(sanitized);
     } catch (error) {
       setPresetMessage({ tone: 'danger', text: `Falha ao importar: ${errorText(error)}` });
     }
@@ -404,7 +420,25 @@ export function GeneralPage({ config, update, autostartActive, dirty }: GeneralP
           if (pendingPreset) applyPreset(pendingPreset);
         }}
         onCancel={() => setPendingPreset(null)}
-      />
+      >
+        {presetCommands(pendingPreset).length ? (
+          <>
+            <strong>Comandos que este preset vai rodar:</strong>
+            <ul>
+              {presetCommands(pendingPreset)
+                .slice(0, 8)
+                .map((command) => (
+                  <li key={`${command.label}-${command.value}`}>
+                    <strong>{command.label}</strong>: <code>{command.value}</code>
+                  </li>
+                ))}
+            </ul>
+            {presetCommands(pendingPreset).length > 8
+              ? `+${presetCommands(pendingPreset).length - 8} comando(s).`
+              : null}
+          </>
+        ) : null}
+      </ConfirmDialog>
     </div>
   );
 }

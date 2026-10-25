@@ -612,3 +612,29 @@
 .ui-note.is-warning strong {
   color: #ffe3ad;
 }
+
+.ui-dialog__extra {
+  max-height: 220px;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3);
+  overflow: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.ui-dialog__extra ul {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.ui-dialog__extra li + li {
+  margin-top: var(--space-1);
+}
+
+.ui-dialog__extra code {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}

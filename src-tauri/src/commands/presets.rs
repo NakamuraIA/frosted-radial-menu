@@ -32,6 +32,14 @@ pub fn parse_preset(payload: &str) -> Result<RadialConfig, String> {
 pub fn export_preset(path: String, config: RadialConfig) -> Result<(), String> {
     let target = Path::new(&path);
 
+    if !target
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("json"))
+    {
+        return Err("Escolha um arquivo com extensao .json para exportar.".to_string());
+    }
+
     if let Some(parent) = target.parent() {
         if !parent.as_os_str().is_empty() {
             fs::create_dir_all(parent)

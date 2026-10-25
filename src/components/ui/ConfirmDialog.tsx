@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 import { Button } from './Button';
 
@@ -9,6 +9,7 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   tone?: 'danger' | 'primary';
+  children?: ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -21,6 +22,7 @@ export function ConfirmDialog({
   confirmLabel = 'Confirmar',
   cancelLabel = 'Cancelar',
   tone = 'primary',
+  children,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -56,6 +58,7 @@ export function ConfirmDialog({
       >
         <h2 id="ui-dialog-title">{title}</h2>
         <p id="ui-dialog-description">{description}</p>
+        {children ? <div className="ui-dialog__extra">{children}</div> : null}
         <div className="ui-dialog__actions">
           <Button variant="ghost" onClick={onCancel}>
             {cancelLabel}

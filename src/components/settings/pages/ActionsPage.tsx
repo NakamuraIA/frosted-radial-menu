@@ -94,7 +94,7 @@ export function ActionsPage({ config, update }: PageProps) {
     setTestMessage(null);
 
     try {
-      await api.runActionPreview(selected, config.preferences.runCommandsAsAdmin);
+      await api.runActionPreview(selected);
       setTestMessage({ tone: 'success', text: `"${selected.label}" executada com sucesso.` });
     } catch (error) {
       setTestMessage({ tone: 'danger', text: `Falha ao testar: ${errorText(error)}` });
