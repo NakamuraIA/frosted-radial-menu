@@ -3,7 +3,18 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
-## [1.4.0] — não lançado
+## [Não lançado]
+
+### Adicionado
+
+- 14 testes de componente (React Testing Library + jsdom): primitivas (`Button`,
+  `Switch`, `Slider`, `Badge`) e o shell do painel (navegação, alterações pendentes,
+  Restaurar com confirmação e página Sobre).
+- `npm run qa:smoke`: smoke E2E versionado (`scripts/qa/smoke.mjs`) que valida a
+  janela instalada via CDP — navegação, botão Testar ação, seletores nativos e
+  comandos de status.
+
+## [1.4.0] — 2026-10-24
 
 ### Adicionado
 

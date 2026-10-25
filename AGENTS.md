@@ -50,12 +50,15 @@ Versão do app é **1.4.0** em `package.json`, `src-tauri/Cargo.toml` e
 
 ```bash
 npm run lint                  # eslint (inclui regras do React Compiler)
-npm run test                  # vitest, funções puras, sem DOM
+npm run test                  # vitest: lógica pura + componentes (RTL/jsdom)
 npm run build                 # tsc -b && vite build
 cargo check --manifest-path src-tauri/Cargo.toml --all-targets
 cargo test  --manifest-path src-tauri/Cargo.toml
 npm run tauri build           # gera exe + instalador NSIS
 npm run tauri dev             # Vite em http://127.0.0.1:5180
+
+# Com o app aberto e WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222:
+npm run qa:smoke              # smoke E2E via CDP (10 checagens, scripts/qa/smoke.mjs)
 ```
 
 Antes de commitar: `npm run lint` + `npm run test` + `cargo test`. Commits pequenos e por assunto.
@@ -112,5 +115,8 @@ Antes de commitar: `npm run lint` + `npm run test` + `cargo test`. Commits peque
   `http://127.0.0.1:9222/json/list` e diferencie pela DOM (`.settings-root`), porque as duas
   páginas têm o mesmo `<title>`. Dentro da página use `window.__TAURI_INTERNALS__.invoke`.
   `Page.captureScreenshot` fotografa a janela mesmo oculta.
+- **Smoke versionado**: `npm run qa:smoke` usa `scripts/qa/smoke.mjs` e espera o app com
+  `--remote-debugging-port=9222` (WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS). Ele só lê a UI e chama
+  comandos inofensivos; sai com código 1 se algo falhar.
 - **Cuidado com clique sintético**: o menu abre sob o cursor; `mouse_event` cego acerta a fatia
   errada e pode abrir apps/terminais de verdade. Prefira hover + screenshot para calibrar.

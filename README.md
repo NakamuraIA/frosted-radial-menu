@@ -108,13 +108,21 @@ Comandos úteis para manter a qualidade do código:
 
 ```bash
 npm run lint                  # eslint (inclui regras do React Compiler)
-npm run test                  # vitest — funções puras do painel
+npm run test                  # vitest — lógica pura + testes de componente (RTL/jsdom)
 npm run build                 # tsc -b && vite build
 cargo check --manifest-path src-tauri/Cargo.toml --all-targets
 cargo test  --manifest-path src-tauri/Cargo.toml
 ```
 
-O CI (`.github/workflows/ci.yml`) roda esses mesmos passos em `windows-latest` a cada push/PR.
+**Smoke no app instalado (opcional).** Com o app aberto e debugging remoto habilitado:
+
+```powershell
+$env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=9222'
+& "$env:LOCALAPPDATA\Frosted Radial Menu\Frosted Radial Menu.exe"
+npm run qa:smoke    # 10 checagens: navegação, Testar ação, seletores e status
+```
+
+O CI (`.github/workflows/ci.yml`) roda lint, testes, build e `cargo` em `windows-latest` a cada push/PR.
 
 ---
 
