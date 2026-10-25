@@ -8,7 +8,6 @@ import { useMenuVisibility } from '../../hooks/useMenuVisibility';
 import { useRadialConfig } from '../../hooks/useRadialConfig';
 import { useSystemStats } from '../../hooks/useSystemStats';
 import { api } from '../../lib/api';
-import { isWindows } from '../../lib/tauri';
 import {
   MAX_MAIN_SLICES,
   findMenuItem,
@@ -95,6 +94,7 @@ export function RadialMenu() {
       }
 
       if (item.actionType === 'none') {
+        setFeedback('Nenhuma ação configurada para este item.');
         return;
       }
 
@@ -129,7 +129,6 @@ export function RadialMenu() {
       className={`radial-shell ${isOpen ? 'is-open' : ''}`}
       style={themeVars}
     >
-      {!isWindows() ? <div className="glass-blur" aria-hidden="true" /> : null}
       <div className="ambient ambient-a" />
       <div className="ambient ambient-b" />
 

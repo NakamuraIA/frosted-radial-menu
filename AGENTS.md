@@ -14,7 +14,7 @@ custaram tempo para descobrir. Leia antes de mexer no código.
 | sysinfo | **0.38.4** | 0.39 exige rustc 1.95; o toolchain da máquina é 1.94.1 |
 | winreg | 0.55 | só Windows: auto-start no registro. `windows-sys` saiu (cursor via Tauri) |
 
-Versão do app é **1.5.0** em `package.json`, `src-tauri/Cargo.toml` e
+Versão do app é **1.5.1** em `package.json`, `src-tauri/Cargo.toml` e
 `src-tauri/tauri.conf.json` — mantenha os três alinhados.
 
 ## Mapa de módulos
@@ -66,7 +66,7 @@ Antes de commitar: `npm run lint` + `npm run test` + `cargo test`. Commits peque
 **Linux**: o backend compila e testa no CI (job `linux`, ubuntu-latest + WebKitGTK). Para gerar
 pacotes: `npm run tauri build -- --bundles deb,appimage`. Ainda é Windows-first: hotkey/bandeja/
 transparência dependem do compositor, elevação é ignorada e auto-start/atalho retornam erro.
-Para QA sem hotkey: `cargo run -- --show` (ou `RADIAL_SHOW=1` no binário).
+Para QA sem hotkey: `npm run tauri dev -- -- --show` (o binário debug usa o devUrl; sem Vite dá `Connection refused`) ou `RADIAL_SHOW=1` no binário release.
 
 ## Regras
 

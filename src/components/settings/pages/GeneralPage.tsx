@@ -257,11 +257,11 @@ const errorText = (error: unknown) =>
         icon={<Power size={16} />}
       >
         <Switch
-          label={windows ? 'Iniciar com o Windows' : 'Iniciar com o sistema (só Windows)'}
+          label={windows ? 'Iniciar com o Windows' : 'Iniciar automaticamente (não suportado)'}
           description={
             windows
               ? 'Registra o app na chave Run do usuário atual. Não exige permissões de administrador.'
-              : 'Este recurso usa o registro do Windows e não existe no Linux.'
+              : 'Este recurso depende do registro do sistema e não existe neste sistema.'
           }
           checked={config.preferences.autostartEnabled}
           disabled={!windows}
@@ -296,11 +296,11 @@ const errorText = (error: unknown) =>
         icon={<MonitorDown size={16} />}
       >
         <Switch
-          label={windows ? 'Atalho no Desktop' : 'Atalho no Desktop (só Windows)'}
+          label={windows ? 'Atalho no Desktop' : 'Atalho no Desktop (não suportado)'}
           description={
             windows
               ? 'Cria ou remove na hora, sem depender do botão Salvar e sem pedir administrador.'
-              : 'Atalhos .lnk são do Windows; este controle fica desligado no Linux.'
+              : 'Atalhos .lnk não existem aqui; use o menu de aplicativos do sistema.'
           }
           checked={shortcutActive ?? false}
           disabled={!windows || shortcutActive === null || shortcutBusy}
@@ -347,7 +347,7 @@ const errorText = (error: unknown) =>
             </p>
           </>
         ) : (
-          <p className="page-hint">Elevação (UAC) é um recurso do Windows; aqui não se aplica.</p>
+          <p className="page-hint">Elevação não se aplica neste sistema.</p>
         )}
       </Card>
 
@@ -377,18 +377,24 @@ const errorText = (error: unknown) =>
 
       <Card
         title="Preset inicial"
-        description="Descobre apps instalados a partir dos atalhos do Menu Iniciar."
+        description={
+          windows
+            ? 'Descobre apps instalados a partir dos atalhos do Menu Iniciar.'
+            : 'Indisponível neste sistema: lê os atalhos do Menu Iniciar do Windows.'
+        }
         icon={<Sparkles size={16} />}
       >
         <p className="page-hint">
-          Lê apenas arquivos <strong>.lnk</strong> locais do Menu Iniciar e ignora desinstaladores,
-          ajuda e sites. Nada é enviado para fora da máquina.
+          {windows
+            ? 'Lê apenas arquivos .lnk locais do Menu Iniciar e ignora desinstaladores, ajuda e sites. Nada é enviado para fora da máquina.'
+            : 'A detecção usa atalhos .lnk do Menu Iniciar; não há equivalente neste sistema.'}
         </p>
         <div className="ui-inline">
           <Button
             icon={<Search size={15} />}
             onClick={() => void detectApps()}
             loading={detecting}
+            disabled={!windows}
           >
             Detectar apps
           </Button>

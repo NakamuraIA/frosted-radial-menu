@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Frosted Radial Menu",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "identifier": "com.nakamuraia.frostedradialmenu",
   "mainBinaryName": "Frosted Radial Menu",
   "build": {
@@ -27,7 +27,7 @@
       },
       {
         "label": "settings",
-        "title": "Configuracoes - Radial Menu",
+        "title": "Configurações - Radial Menu",
         "width": 1160,
         "height": 680,
         "minWidth": 980,

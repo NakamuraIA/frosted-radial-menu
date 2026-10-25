@@ -11,7 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](#)
 [![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)](#)
 [![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](#)
-[![Download](https://img.shields.io/badge/Download-1.5.0-43c7d9?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/NakamuraIA/frosted-radial-menu/releases/latest)
+[![Download](https://img.shields.io/badge/Download-1.5.1-43c7d9?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/NakamuraIA/frosted-radial-menu/releases/latest)
 
 *Leve, animado, customizável e compilável para `.exe` sem depender de APIs externas.*
 
@@ -160,9 +160,11 @@ npm run build
 cargo test --manifest-path src-tauri/Cargo.toml          # 52 testes
 npm run tauri build -- --bundles deb,appimage            # gera .deb/.AppImage
 
-# Abrir o menu direto no start (o Alt+Space costuma ser do gerenciador de janelas):
+# Abrir o menu direto no start (o Alt+Space costuma ser do gerenciador de janelas).
+# Em dev, o binário de debug carrega a interface do Vite: suba `npm run dev` antes
+# ou use `npm run tauri dev -- -- --show`. Para rodar sozinho, gere o pacote:
+npm run tauri build -- --bundles deb,appimage
 RADIAL_SHOW=1 ./src-tauri/target/release/Frosted\ Radial\ Menu
-# ou, em dev: cargo run --manifest-path src-tauri/Cargo.toml -- --show
 ```
 
 Limitações conhecidas: `windowMode: "show"` não abre terminal próprio (roda `bash -lc`), a elevação (`runCommandsAsAdmin`) é ignorada, auto-start/atalho de Desktop retornam erro explicativo e o overlay pode ficar sem transparência em ambientes sem compositor.

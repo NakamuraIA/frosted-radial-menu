@@ -96,7 +96,11 @@ export function AboutPage({ version }: AboutPageProps) {
       <Card title="Configuração" description="Onde o app grava o arquivo JSON.">
         <p className="page-hint">
           Arquivo de configuração:{' '}
-          <strong>%LOCALAPPDATA%\com.nakamuraia.frostedradialmenu\config.json</strong>
+          <strong>
+            {isWindows()
+              ? '%LOCALAPPDATA%\\com.nakamuraia.frostedradialmenu\\config.json'
+              : '~/.local/share/com.nakamuraia.frostedradialmenu/config.json'}
+          </strong>
         </p>
         <p className="page-hint">
           Faça backup desse arquivo antes de editar presets ou experimentar o botão de restaurar

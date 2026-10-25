@@ -3,6 +3,21 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.5.1] — 2026-10-25
+
+### Corrigido (retorno dos testes no Linux)
+
+- Removida a camada escura de "desfoque": no WebKitGTK 2.54/X11 ela não desfocava
+  nada e só aparecia como um círculo cinza. O degradê original volta a ser o visual.
+- Textos de sistema mais neutros (sem "só Windows"/"UAC" no meio da frase) e o
+  **Preset inicial** fica desabilitado fora do Windows.
+- **Sobre** mostra o caminho real da config por sistema
+  (`~/.local/share/...` no Linux) em vez de `%LOCALAPPDATA%`.
+- Título da janela de configurações com acento: **Configurações**.
+- Item **Sem ação** agora mostra "Nenhuma ação configurada para este item", o que
+  também torna o teste de Enter/Espaço observável.
+- Runbook: o binário de debug carrega o Vite (`Connection refused` sem ele); use
+  `npm run tauri dev -- -- --show` ou gere o pacote antes.
 ## [1.5.0] — 2026-10-25
 
 ### Adicionado
