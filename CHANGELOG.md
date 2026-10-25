@@ -17,6 +17,28 @@ Versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
   (remove `windows-sys`), `winreg` só no Windows, shell `bash -lc` no unix e
   job `Linux` no CI (`ubuntu-latest`, WebKitGTK) rodando `cargo check` e
   `cargo test` — 52 testes passando nos dois sistemas.
+- `--show` / `RADIAL_SHOW=1` abre o menu no start (QA no Linux, onde `Alt+Space`
+  costuma ser do gerenciador de janelas).
+
+### Corrigido (auditoria de 3 agentes)
+
+- **Segurança**: CSP restrita; `run_action_preview` só aceita a janela de
+  configurações e usa o modo admin salvo; preset importado não liga execução como
+  admin e lista os comandos antes de aplicar; `export_preset` exige `.json`.
+- **Menu**: Esc volta do submenu/fecha, Enter e Espaço funcionam no submenu e as
+  fatias têm `aria-label`/`aria-haspopup`; foco inicial na primeira fatia.
+- **Desempenho**: relógio e métricas pausam com o menu fechado; painel de
+  configurações carrega por `React.lazy` (bundle do menu 312 KB → 265 KB).
+- **Corrida ao fechar**: o timer de hide (240 ms) é cancelado quando o menu
+  reabre — fim da janela sumindo logo depois de abrir.
+- **Erros visíveis**: ação que falha mostra aviso no centro e CPU exibe “—” em vez
+  de números simulados dentro do Tauri.
+- **Config**: gravação atômica (`.tmp` + rename), backup `config.json.corrupt` e
+  `schemaVersion` com migração.
+- **i18n**: relógio/data em pt-BR e acentos em `Mídia`, `Música`, `Vídeo`,
+  “Abrir configurações” e “Sem ação”; `--text-muted` agora passa de 4,5:1.
+- **Rust/Linux**: processos filhos recolhidos no unix (sem zumbis) e
+  `TypeScript strict` ligado.
 
 ## [1.4.0] — 2026-10-24
 

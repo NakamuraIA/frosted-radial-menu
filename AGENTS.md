@@ -87,7 +87,10 @@ Para QA sem hotkey: `cargo run -- --show` (ou `RADIAL_SHOW=1` no binário).
 8. **UI não usa cor/espaço literal**: tudo sai de `styles/tokens.css` (`--bg-surface`, `--accent`,
    `--space-*`, `--radius-*`). Páginas do painel recebem `PageProps` e editam o mesmo rascunho —
    trocar de página não pode perder alteração.
-9. **Integrações nunca mentem**: recurso sem backend aparece como "Indisponível" (ver
+9. **Segurança de IPC**: `run_action_preview` só roda na janela `settings` e usa o
+   `runCommandsAsAdmin` da config salva — o front nunca decide elevação. Preset
+   importado não pode ligar admin. CSP fica definida em `tauri.conf.json`.
+10. **Integrações nunca mentem**: recurso sem backend aparece como "Indisponível" (ver
    `IntegrationsPage`), nunca com estado simulado.
 10. Comando que **já abre as próprias janelas** (um `.bat` com `start`) deve usar
     `windowMode: "hide"`; caso contrário o usuário vê um terminal extra vazio. No modo
