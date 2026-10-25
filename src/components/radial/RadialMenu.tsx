@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CenterDashboard } from './CenterDashboard';
 import { RadialCanvas } from './RadialCanvas';
@@ -17,16 +17,23 @@ import {
 import { clampPercent } from '../../lib/format';
 import './RadialMenu.css';
 
+const FEEDBACK_TIMEOUT_MS = 3500;
+
 /**
  * Container do menu: junta configuração, métricas e estado de visibilidade e
  * delega o desenho para `RadialCanvas` / `CenterDashboard`.
+ *
+ * Relógio e métricas só rodam com o menu aberto; Esc volta do submenu ou fecha,
+ * e uma ação que falha mostra um aviso no centro em vez de sumir no console.
  */
 export function RadialMenu() {
   const { config, reload } = useRadialConfig();
-  const stats = useSystemStats();
-  const time = useClock();
   const { isOpen, activeParentId, setActiveParentId, hide } = useMenuVisibility(reload);
+  const stats = useSystemStats(isOpen);
+  const time = useClock(isOpen);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
 
   const mainItems = useMemo(() => config.items.slice(0, MAX_MAIN_SLICES), [config.items]);
   const layout = useMemo(() => normalizeLayoutConfig(config.layout), [config.layout]);
@@ -41,6 +48,44 @@ export function RadialMenu() {
     return index * (360 / mainItems.length);
   }, [mainItems, activeParentId]);
 
+  // Esc: sai do submenu ou fecha o menu (atalho mais esperado num launcher).
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+
+      event.preventDefault();
+      if (activeParentId) {
+        setActiveParentId(null);
+      } else {
+        void hide();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, activeParentId, hide, setActiveParentId]);
+
+  // Teclado: o menu já abre com o foco na primeira fatia.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const timer = window.setTimeout(() => {
+      const firstSlice = shellRef.current?.querySelector<SVGGElement>('.slice-group[tabindex="0"]');
+      firstSlice?.focus();
+    }, 140);
+
+    return () => window.clearTimeout(timer);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!feedback) return;
+
+    const timer = window.setTimeout(() => setFeedback(null), FEEDBACK_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [feedback]);
+
   const runAction = useCallback(
     async (item: MenuItemConfig) => {
       if (item.children?.length || item.actionType === 'submenu') {
@@ -48,13 +93,19 @@ export function RadialMenu() {
         return;
       }
 
+      if (item.actionType === 'none') {
+        return;
+      }
+
       try {
         await api.runMenuAction(item.id);
       } catch (error) {
         console.error(`Falha ao executar ${item.label}`, error);
+        setFeedback(`Não foi possível executar “${item.label}”.`);
+        return;
       }
 
-      if (config.preferences.hideAfterAction && item.actionType !== 'none') {
+      if (config.preferences.hideAfterAction) {
         await hide();
       }
     },
@@ -72,7 +123,11 @@ export function RadialMenu() {
   const themeVars = buildRadialThemeVars(config.theme, layout);
 
   return (
-    <div className={`radial-shell ${isOpen ? 'is-open' : ''}`} style={themeVars}>
+    <div
+      ref={shellRef}
+      className={`radial-shell ${isOpen ? 'is-open' : ''}`}
+      style={themeVars}
+    >
       <div className="ambient ambient-a" />
       <div className="ambient ambient-b" />
 
@@ -89,11 +144,17 @@ export function RadialMenu() {
 
       <CenterDashboard
         time={time}
-        cpuPercent={clampPercent(stats.cpu)}
+        cpuPercent={stats ? clampPercent(stats.cpu) : null}
         showPercentages={config.preferences.showPercentages}
         hasActiveParent={Boolean(activeParentId)}
         onCenterClick={() => void handleCenterClick()}
       />
+
+      {feedback ? (
+        <div className="menu-feedback" role="status" aria-live="polite">
+          {feedback}
+        </div>
+      ) : null}
     </div>
   );
 }

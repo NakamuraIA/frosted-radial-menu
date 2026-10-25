@@ -35,7 +35,7 @@ export function MenuPreview({ config }: { config: RadialConfig }) {
         />
         <CenterDashboard
           time={time}
-          cpuPercent={clampPercent(stats.cpu)}
+          cpuPercent={stats ? clampPercent(stats.cpu) : null}
           showPercentages={config.preferences.showPercentages}
           hasActiveParent={false}
           onCenterClick={() => {}}

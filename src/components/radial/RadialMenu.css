@@ -388,3 +388,22 @@
     transition: none;
   }
 }
+
+/* Aviso curto quando uma ação falha (o console não é visível para o usuário). */
+.menu-feedback {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  z-index: 5;
+  max-width: 70%;
+  padding: 10px 16px;
+  translate: -50% 0;
+  border: 1px solid rgba(255, 92, 122, 0.45);
+  border-radius: 999px;
+  background: rgba(28, 12, 18, 0.92);
+  color: #ffd7de;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}

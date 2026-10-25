@@ -26,6 +26,7 @@ export const DEFAULT_LAYOUT: LayoutConfig = {
  */
 export const FALLBACK_CONFIG: RadialConfig = {
   version: 1,
+  schemaVersion: 1,
   theme: {
     accent: '#43c7d9',
     accentAlt: '#a78bfa',
@@ -175,21 +176,21 @@ export const FALLBACK_CONFIG: RadialConfig = {
     },
     {
       id: 'media',
-      label: 'Midia',
+      label: 'Mídia',
       icon: 'music',
       color: '#e879d8',
       actionType: 'submenu',
       children: [
         {
           id: 'media-music',
-          label: 'Musica',
+          label: 'Música',
           icon: 'music',
           color: '#e879d8',
           actionType: 'none',
         },
         {
           id: 'media-video',
-          label: 'Video',
+          label: 'Vídeo',
           icon: 'video',
           color: '#43c7d9',
           actionType: 'none',

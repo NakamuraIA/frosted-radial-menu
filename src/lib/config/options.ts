@@ -4,9 +4,9 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
   openPath: 'Abrir app, pasta ou arquivo',
   openUrl: 'Abrir URL',
   runCommand: 'Rodar comando',
-  settings: 'Abrir configuracoes',
+  settings: 'Abrir configurações',
   submenu: 'Submenu',
-  none: 'Sem acao',
+  none: 'Sem ação',
 };
 
 export const ICON_OPTIONS = [

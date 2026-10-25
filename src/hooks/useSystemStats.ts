@@ -2,30 +2,43 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { api } from '../lib/api';
 import type { SystemStats } from '../lib/config';
+import { isTauri } from '../lib/tauri';
 
 const POLL_INTERVAL_MS = 1800;
 
+function simulatedNext(current: SystemStats | null): SystemStats {
+  const cpu = current?.cpu ?? 64;
+  const ram = current?.ram ?? 42;
+
+  return {
+    cpu: cpu >= 92 ? 28 : cpu + 7,
+    ram: ram >= 84 ? 38 : ram + 3,
+    gpu: current?.gpu ?? null,
+  };
+}
+
 /**
- * Percentuais exibidos no centro. Sem backend (preview no navegador) simula uma
- * variação suave em vez de deixar o centro vazio.
+ * Percentuais exibidos no centro.
+ *
+ * - Fora do Tauri (preview no navegador) simula uma variação suave.
+ * - Dentro do Tauri, se o backend falhar, devolve `null` para a UI mostrar "—"
+ *   em vez de inventar números.
+ * - Fechado, não faz polling.
  */
-export function useSystemStats() {
-  const [stats, setStats] = useState<SystemStats>({ cpu: 64, ram: 42, gpu: null });
+export function useSystemStats(enabled = true): SystemStats | null {
+  const [stats, setStats] = useState<SystemStats | null>(null);
 
   const refresh = useCallback(async () => {
     try {
       setStats(await api.getSystemStats());
     } catch {
-      setStats((current) => ({
-        cpu: current.cpu >= 92 ? 28 : current.cpu + 7,
-        ram: current.ram >= 84 ? 38 : current.ram + 3,
-        gpu: current.gpu,
-      }));
+      setStats((current) => (isTauri() ? null : simulatedNext(current)));
     }
   }, []);
 
   useEffect(() => {
-    // Primeira leitura depois do paint; o intervalo cuida das seguintes.
+    if (!enabled) return;
+
     const kickoff = window.setTimeout(() => {
       void refresh();
     }, 0);
@@ -37,7 +50,7 @@ export function useSystemStats() {
       window.clearTimeout(kickoff);
       window.clearInterval(timer);
     };
-  }, [refresh]);
+  }, [enabled, refresh]);
 
   return stats;
 }

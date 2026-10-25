@@ -51,8 +51,15 @@ export function SubmenuSlices({
             onMouseEnter={() => onHover(item.id)}
             onMouseLeave={() => onHover(null)}
             onClick={() => onSelect(item)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onSelect(item);
+              }
+            }}
             role="button"
             tabIndex={0}
+            aria-label={item.label}
             style={{ '--slice-color': item.color } as CSSProperties}
           >
             <path

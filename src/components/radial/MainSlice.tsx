@@ -61,6 +61,9 @@ export function MainSlice({
       }}
       role="button"
       tabIndex={0}
+      aria-label={item.label}
+      aria-haspopup={item.children?.length ? 'menu' : undefined}
+      aria-expanded={item.children?.length ? isActive : undefined}
       style={{ '--slice-color': item.color } as CSSProperties}
     >
       <path
