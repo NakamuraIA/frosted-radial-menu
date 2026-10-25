@@ -1,6 +1,14 @@
 import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
-import { Download, FileJson, Power, RotateCcw, ShieldAlert, Upload } from 'lucide-react';
-import { useState } from 'react';
+import {
+  Download,
+  FileJson,
+  MonitorDown,
+  Power,
+  RotateCcw,
+  ShieldAlert,
+  Upload,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { Button, Card, ConfirmDialog, PageHeader, Switch } from '../../ui';
 import { api } from '../../../lib/api';
@@ -22,6 +30,48 @@ export function GeneralPage({ config, update, autostartActive, dirty }: GeneralP
   const [confirmReset, setConfirmReset] = useState(false);
   const [pendingPreset, setPendingPreset] = useState<RadialConfig | null>(null);
   const [presetMessage, setPresetMessage] = useState<PresetMessage | null>(null);
+  const [shortcutActive, setShortcutActive] = useState<boolean | null>(null);
+  const [shortcutBusy, setShortcutBusy] = useState(false);
+  const [shortcutMessage, setShortcutMessage] = useState<PresetMessage | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    api
+      .getDesktopShortcutStatus()
+      .then((active) => {
+        if (mounted) setShortcutActive(active);
+      })
+      .catch(() => {
+        if (mounted) setShortcutActive(null);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const toggleDesktopShortcut = async (next: boolean) => {
+    setShortcutBusy(true);
+    setShortcutMessage(null);
+
+    try {
+      await api.setDesktopShortcut(next);
+      const active = await api.getDesktopShortcutStatus().catch(() => next);
+      setShortcutActive(active);
+      setShortcutMessage({
+        tone: 'success',
+        text: next ? 'Atalho criado na Área de Trabalho.' : 'Atalho removido.',
+      });
+    } catch (error) {
+      setShortcutMessage({
+        tone: 'danger',
+        text: `Falha no atalho: ${error instanceof Error ? error.message : String(error)}`,
+      });
+    } finally {
+      setShortcutBusy(false);
+    }
+  };
 
   const patchPreference = (patch: Partial<(typeof config)['preferences']>) => {
     update((current) => ({
@@ -109,6 +159,36 @@ export function GeneralPage({ config, update, autostartActive, dirty }: GeneralP
           </strong>
           . A alteração é aplicada quando você salvar.
         </p>
+      </Card>
+
+      <Card
+        title="Atalho na Área de Trabalho"
+        description="Um atalho .lnk apontando para este executável."
+        icon={<MonitorDown size={16} />}
+      >
+        <Switch
+          label="Atalho no Desktop"
+          description="Cria ou remove na hora, sem depender do botão Salvar e sem pedir administrador."
+          checked={shortcutActive ?? false}
+          disabled={shortcutActive === null || shortcutBusy}
+          onChange={(value) => void toggleDesktopShortcut(value)}
+        />
+        <p className="page-hint">
+          Estado real:{' '}
+          <strong>
+            {shortcutActive === null
+              ? 'indisponível'
+              : shortcutActive
+                ? 'atalho presente'
+                : 'sem atalho'}
+          </strong>
+          .
+        </p>
+        {shortcutMessage ? (
+          <p className={`preset-message is-${shortcutMessage.tone}`} role="status">
+            {shortcutMessage.text}
+          </p>
+        ) : null}
       </Card>
 
       <Card

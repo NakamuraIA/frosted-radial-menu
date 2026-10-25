@@ -29,6 +29,11 @@ export const api = {
 
   getAutostartStatus: () => invoke<boolean>('get_autostart_status'),
 
+  getDesktopShortcutStatus: () => invoke<boolean>('get_desktop_shortcut_status'),
+
+  setDesktopShortcut: (enabled: boolean) =>
+    invoke<void>('set_desktop_shortcut', { enabled }),
+
   getSystemStats: () => invoke<SystemStats>('get_system_stats'),
 
   /** Grava a configuração atual como preset JSON no caminho escolhido. */

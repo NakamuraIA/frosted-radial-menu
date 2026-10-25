@@ -3,7 +3,16 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
-## [1.2.0] — não lançado
+## [1.3.0] — não lançado
+
+### Adicionado
+
+- **Atalho na Área de Trabalho pelo painel**: cria e remove o `.lnk` apontando para o
+  executável atual, com estado real exibido e sem pedir administrador.
+- Módulo `platform/desktop_shortcut` com 4 testes (nome do arquivo, diretório absoluto,
+  sufixo do caminho e remoção segura quando o atalho não existe) — 45 testes Rust no total.
+
+## [1.2.0] — 2026-10-24
 
 ### Adicionado
 

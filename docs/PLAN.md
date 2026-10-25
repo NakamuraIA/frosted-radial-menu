@@ -150,10 +150,11 @@ Concluido:
   abrem as próprias janelas.
 - Botão "testar ação" no editor: executa o item do rascunho antes de salvar.
 - Seletor nativo de arquivo/pasta nos campos de destino e pasta de trabalho.
+- Criar/remover atalho na Área de Trabalho pelo painel, com estado real e sem
+  administrador (`.lnk` via COM em processo oculto).
 
 Pendente:
 
-- Criar/remover atalho na Área de Trabalho pelo painel.
 - Gerador de preset inicial baseado no PC:
   - detectar VS Code;
   - detectar navegadores;

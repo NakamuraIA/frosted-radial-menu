@@ -51,6 +51,8 @@ pub fn run() {
             commands::windows::hide_main_window,
             commands::windows::hide_settings_window,
             commands::autostart::get_autostart_status,
+            commands::desktop::get_desktop_shortcut_status,
+            commands::desktop::set_desktop_shortcut,
             commands::system::get_system_stats,
             commands::presets::export_preset,
             commands::presets::import_preset,

@@ -7,6 +7,7 @@
 
 pub mod autostart;
 pub mod config;
+pub mod desktop;
 pub mod menu;
 pub mod presets;
 pub mod system;
