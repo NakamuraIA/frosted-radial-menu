@@ -92,11 +92,11 @@ Para QA sem hotkey: `cargo run -- --show` (ou `RADIAL_SHOW=1` no binário).
    importado não pode ligar admin. CSP fica definida em `tauri.conf.json`.
 10. **Integrações nunca mentem**: recurso sem backend aparece como "Indisponível" (ver
    `IntegrationsPage`), nunca com estado simulado.
-10. Comando que **já abre as próprias janelas** (um `.bat` com `start`) deve usar
+11. Comando que **já abre as próprias janelas** (um `.bat` com `start`) deve usar
     `windowMode: "hide"`; caso contrário o usuário vê um terminal extra vazio. No modo
     visível, o shell é iniciado direto com `CREATE_NEW_CONSOLE` — não volte a usar um
     PowerShell intermediário com `Start-Process` (gera duas janelas).
-11. Limites do radial ficam em `src/lib/config/limits.ts` (`MAX_MAIN_SLICES = 10`,
+12. Limites do radial ficam em `src/lib/config/limits.ts` (`MAX_MAIN_SLICES = 10`,
     `MAX_SUBMENU_ITEMS = 8`). Menu, painel e preview importam de lá — não duplique o número.
 
 ## Armadilhas conhecidas
