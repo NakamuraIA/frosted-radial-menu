@@ -56,6 +56,7 @@ fn item(
 pub fn default_config() -> RadialConfig {
     RadialConfig {
         version: 1,
+        schema_version: 1,
         theme: ThemeConfig {
             accent: "#43c7d9".into(),
             accent_alt: "#a78bfa".into(),
@@ -228,15 +229,15 @@ pub fn default_config() -> RadialConfig {
             ),
             item(
                 "media",
-                "Midia",
+                "Mídia",
                 "music",
                 "#e879d8",
                 "submenu",
                 None,
                 None,
                 Some(vec![
-                    item("media-music", "Musica", "music", "#e879d8", "none", None, None, None),
-                    item("media-video", "Video", "video", "#43c7d9", "none", None, None, None),
+                    item("media-music", "Música", "music", "#e879d8", "none", None, None, None),
+                    item("media-video", "Vídeo", "video", "#43c7d9", "none", None, None, None),
                     item("media-games", "Jogos", "gamepad", "#4ade9b", "none", None, None, None),
                 ]),
             ),

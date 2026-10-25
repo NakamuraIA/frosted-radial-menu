@@ -2,6 +2,10 @@
 //!
 //! O arquivo fica em `app_local_data_dir()/config.json`. Configurações antigas
 //! gravadas em `app_config_dir()` (Roaming) são migradas na primeira leitura.
+//!
+//! Grava sempre em um `.tmp` e renomeia por cima, para uma queda no meio da
+//! escrita não deixar o config pela metade. Se o JSON estiver corrompido, guarda
+//! uma cópia `.corrupt` antes de reportar o erro (o chamador decide o fallback).
 
 use std::fs;
 use std::path::PathBuf;
@@ -31,7 +35,17 @@ pub fn write_config(app: &AppHandle, config: &RadialConfig) -> Result<(), String
     }
 
     let payload = serde_json::to_string_pretty(config).map_err(|error| error.to_string())?;
-    fs::write(path, payload).map_err(|error| error.to_string())
+    let temporary = path.with_extension("json.tmp");
+
+    fs::write(&temporary, payload).map_err(|error| error.to_string())?;
+
+    // `rename` não sobrescreve no Windows; remover antes mantém o efeito atômico
+    // o suficiente (se falhar, o `.tmp` ainda tem a versão nova).
+    if path.exists() {
+        fs::remove_file(&path).map_err(|error| error.to_string())?;
+    }
+
+    fs::rename(&temporary, &path).map_err(|error| error.to_string())
 }
 
 /// Lê a configuração do disco, migrando a versão legada e criando o arquivo
@@ -55,6 +69,24 @@ pub fn read_config(app: &AppHandle) -> Result<RadialConfig, String> {
         return Ok(config);
     }
 
-    let payload = fs::read_to_string(path).map_err(|error| error.to_string())?;
-    serde_json::from_str(&payload).map_err(|error| error.to_string())
+    let payload = fs::read_to_string(&path).map_err(|error| error.to_string())?;
+
+    match serde_json::from_str::<RadialConfig>(&payload) {
+        Ok(mut config) => {
+            if config.schema_version == 0 {
+                config.schema_version = 1;
+            }
+            Ok(config)
+        }
+        Err(error) => {
+            // Preserva o arquivo original para inspeção antes de o app regravar.
+            let backup = path.with_extension("json.corrupt");
+            let _ = fs::copy(&path, &backup);
+            Err(format!(
+                "Configuracao invalida (backup em {}): {}",
+                backup.display(),
+                error
+            ))
+        }
+    }
 }

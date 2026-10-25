@@ -71,11 +71,20 @@ export function normalizeLayoutConfig(layout?: Partial<LayoutConfig> | null): La
 export function normalizeRadialConfig(
   config: Partial<RadialConfig> & { layout?: Partial<LayoutConfig> | null },
 ): RadialConfig {
+  const theme = { ...FALLBACK_CONFIG.theme, ...(config.theme ?? {}) };
+
   return {
     version: config.version ?? FALLBACK_CONFIG.version,
+    schemaVersion: config.schemaVersion ?? FALLBACK_CONFIG.schemaVersion,
     theme: {
-      ...FALLBACK_CONFIG.theme,
-      ...(config.theme ?? {}),
+      ...theme,
+      // Vidro quase transparente deixa o texto ilegível sobre fundo claro.
+      glassOpacity: clampNumber(
+        theme.glassOpacity,
+        0.6,
+        0.9,
+        FALLBACK_CONFIG.theme.glassOpacity,
+      ),
     },
     layout: normalizeLayoutConfig(config.layout),
     preferences: {

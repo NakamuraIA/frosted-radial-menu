@@ -8,10 +8,17 @@ use serde::{Deserialize, Serialize};
 
 use crate::config::defaults::default_layout_config;
 
+pub fn default_schema_version() -> u32 {
+    1
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RadialConfig {
     pub version: u32,
+    /// Versão do formato do arquivo; permite migrar sem perder configuração.
+    #[serde(default = "default_schema_version")]
+    pub schema_version: u32,
     pub theme: ThemeConfig,
     #[serde(default = "default_layout_config")]
     pub layout: LayoutConfig,

@@ -63,6 +63,7 @@ export interface AppPreferences {
 
 export interface RadialConfig {
   version: number;
+  schemaVersion: number;
   theme: ThemeConfig;
   layout: LayoutConfig;
   preferences: AppPreferences;
