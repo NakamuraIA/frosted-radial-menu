@@ -193,7 +193,19 @@ pub fn run_shell_action(action: &MenuItemConfig, run_as_admin: bool) -> Result<(
 
     apply_console_flags(&mut command, hidden);
 
-    command.spawn().map(|_| ()).map_err(|error| error.to_string())
+    let child = command.spawn().map_err(|error| error.to_string())?;
+
+    // No Unix, sem `wait` o filho vira zumbi quando o app fica aberto o dia todo.
+    #[cfg(not(windows))]
+    std::thread::spawn(move || {
+        let mut child = child;
+        let _ = child.wait();
+    });
+
+    #[cfg(windows)]
+    drop(child);
+
+    Ok(())
 }
 
 #[cfg(test)]

@@ -85,3 +85,14 @@
 .app-crash button:hover {
   background: var(--accent-strong);
 }
+
+/* Enquanto o chunk do painel carrega (React.lazy). */
+.settings-loading {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+}
