@@ -11,7 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](#)
 [![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)](#)
 [![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](#)
-[![Download](https://img.shields.io/badge/Download-1.4.0-43c7d9?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/NakamuraIA/frosted-radial-menu/releases/latest)
+[![Download](https://img.shields.io/badge/Download-1.5.0-43c7d9?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/NakamuraIA/frosted-radial-menu/releases/latest)
 
 *Leve, animado, customizável e compilável para `.exe` sem depender de APIs externas.*
 

@@ -14,7 +14,7 @@ custaram tempo para descobrir. Leia antes de mexer no código.
 | sysinfo | **0.38.4** | 0.39 exige rustc 1.95; o toolchain da máquina é 1.94.1 |
 | winreg | 0.55 | só Windows: auto-start no registro. `windows-sys` saiu (cursor via Tauri) |
 
-Versão do app é **1.4.0** em `package.json`, `src-tauri/Cargo.toml` e
+Versão do app é **1.5.0** em `package.json`, `src-tauri/Cargo.toml` e
 `src-tauri/tauri.conf.json` — mantenha os três alinhados.
 
 ## Mapa de módulos
