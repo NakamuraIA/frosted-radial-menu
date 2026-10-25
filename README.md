@@ -159,6 +159,10 @@ npm ci
 npm run build
 cargo test --manifest-path src-tauri/Cargo.toml          # 52 testes
 npm run tauri build -- --bundles deb,appimage            # gera .deb/.AppImage
+
+# Abrir o menu direto no start (o Alt+Space costuma ser do gerenciador de janelas):
+RADIAL_SHOW=1 ./src-tauri/target/release/Frosted\ Radial\ Menu
+# ou, em dev: cargo run --manifest-path src-tauri/Cargo.toml -- --show
 ```
 
 Limitações conhecidas: `windowMode: "show"` não abre terminal próprio (roda `bash -lc`), a elevação (`runCommandsAsAdmin`) é ignorada, auto-start/atalho de Desktop retornam erro explicativo e o overlay pode ficar sem transparência em ambientes sem compositor.

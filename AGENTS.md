@@ -66,6 +66,7 @@ Antes de commitar: `npm run lint` + `npm run test` + `cargo test`. Commits peque
 **Linux**: o backend compila e testa no CI (job `linux`, ubuntu-latest + WebKitGTK). Para gerar
 pacotes: `npm run tauri build -- --bundles deb,appimage`. Ainda é Windows-first: hotkey/bandeja/
 transparência dependem do compositor, elevação é ignorada e auto-start/atalho retornam erro.
+Para QA sem hotkey: `cargo run -- --show` (ou `RADIAL_SHOW=1` no binário).
 
 ## Regras
 

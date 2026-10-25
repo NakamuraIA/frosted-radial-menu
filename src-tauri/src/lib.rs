@@ -93,8 +93,29 @@ pub fn run() {
 
             ui::tray::setup(handle)?;
 
+            if show_on_start() {
+                match app.get_webview_window(ui::windows::MAIN_WINDOW) {
+                    Some(window) => {
+                        if let Err(error) = ui::windows::show_main_window_at_cursor(&window) {
+                            eprintln!("Nao foi possivel mostrar o menu inicial: {}", error);
+                        }
+                    }
+                    None => eprintln!("Janela principal indisponivel para o --show."),
+                }
+            }
+
             Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+/// `--show` (ou `RADIAL_SHOW=1`) abre o menu já no start: útil para QA no Linux,
+/// onde o `Alt+Space` costuma estar ocupado pelo gerenciador de janelas.
+fn show_on_start() -> bool {
+    if std::env::args().any(|arg| arg == "--show" || arg == "-s") {
+        return true;
+    }
+
+    std::env::var_os("RADIAL_SHOW").is_some_and(|value| !value.is_empty() && value != "0")
 }
