@@ -12,7 +12,7 @@ custaram tempo para descobrir. Leia antes de mexer no código.
 | React / Vite | 19.3.1 / 8.3.5 | — |
 | TypeScript | **6.0.3** | `typescript-eslint` declara peer `<6.1.0`; não subir para 7 |
 | sysinfo | **0.38.4** | 0.39 exige rustc 1.95; o toolchain da máquina é 1.94.1 |
-| winreg | 0.55 | só Windows: auto-start no registro (Windows: 0.61.2 / 0.55 virou winreg isolado; windows-sys saiu) |
+| winreg | 0.55 | só Windows: auto-start no registro. `windows-sys` saiu (cursor via Tauri) |
 
 Versão do app é **1.4.0** em `package.json`, `src-tauri/Cargo.toml` e
 `src-tauri/tauri.conf.json` — mantenha os três alinhados.
@@ -62,6 +62,10 @@ npm run qa:smoke              # smoke E2E via CDP (10 checagens, scripts/qa/smok
 ```
 
 Antes de commitar: `npm run lint` + `npm run test` + `cargo test`. Commits pequenos e por assunto.
+
+**Linux**: o backend compila e testa no CI (job `linux`, ubuntu-latest + WebKitGTK). Para gerar
+pacotes: `npm run tauri build -- --bundles deb,appimage`. Ainda é Windows-first: hotkey/bandeja/
+transparência dependem do compositor, elevação é ignorada e auto-start/atalho retornam erro.
 
 ## Regras
 
