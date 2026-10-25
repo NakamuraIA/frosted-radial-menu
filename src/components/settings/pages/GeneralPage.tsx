@@ -5,14 +5,24 @@ import {
   MonitorDown,
   Power,
   RotateCcw,
+  Search,
   ShieldAlert,
+  Sparkles,
   Upload,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button, Card, ConfirmDialog, PageHeader, Switch } from '../../ui';
 import { api } from '../../../lib/api';
-import { FALLBACK_CONFIG, type RadialConfig } from '../../../lib/config';
+import {
+  FALLBACK_CONFIG,
+  MAX_MAIN_SLICES,
+  MAX_SUBMENU_ITEMS,
+  flattenMenuItems,
+  type DetectedApp,
+  type MenuItemConfig,
+  type RadialConfig,
+} from '../../../lib/config';
 import type { PageProps } from './types';
 
 interface GeneralPageProps extends PageProps {
@@ -33,6 +43,9 @@ export function GeneralPage({ config, update, autostartActive, dirty }: GeneralP
   const [shortcutActive, setShortcutActive] = useState<boolean | null>(null);
   const [shortcutBusy, setShortcutBusy] = useState(false);
   const [shortcutMessage, setShortcutMessage] = useState<PresetMessage | null>(null);
+  const [detectedApps, setDetectedApps] = useState<DetectedApp[] | null>(null);
+  const [detecting, setDetecting] = useState(false);
+  const [detectedMessage, setDetectedMessage] = useState<PresetMessage | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -91,6 +104,85 @@ export function GeneralPage({ config, update, autostartActive, dirty }: GeneralP
 
   const errorText = (error: unknown) =>
     error instanceof Error ? error.message : String(error);
+
+  const detectApps = async () => {
+    setDetecting(true);
+    setDetectedMessage(null);
+
+    try {
+      const apps = await api.detectInstalledApps();
+      setDetectedApps(apps);
+      setDetectedMessage(
+        apps.length
+          ? { tone: 'success', text: `${apps.length} atalhos encontrados no Menu Iniciar.` }
+          : { tone: 'danger', text: 'Nenhum atalho de aplicativo encontrado.' },
+      );
+    } catch (error) {
+      setDetectedMessage({
+        tone: 'danger',
+        text: `Falha ao detectar: ${error instanceof Error ? error.message : String(error)}`,
+      });
+    } finally {
+      setDetecting(false);
+    }
+  };
+
+  const addDetectedSubmenu = () => {
+    if (!detectedApps?.length) return;
+
+    const usedPaths = new Set(
+      flattenMenuItems(config.items)
+        .map(({ item }) => item.value)
+        .filter((value): value is string => Boolean(value)),
+    );
+    const fresh = detectedApps.filter((app) => !usedPaths.has(app.path));
+
+    if (!fresh.length) {
+      setDetectedMessage({ tone: 'danger', text: 'Todos os apps encontrados já estão no menu.' });
+      return;
+    }
+
+    const hasSlot =
+      config.items.some((item) => item.id === 'apps-pc') || config.items.length < MAX_MAIN_SLICES;
+    if (!hasSlot) {
+      setDetectedMessage({
+        tone: 'danger',
+        text: `O menu já usa as ${MAX_MAIN_SLICES} fatias. Remova um item para abrir espaço.`,
+      });
+      return;
+    }
+
+    const palette = ['#43c7d9', '#a78bfa', '#e879d8', '#4ade9b', '#f2c46d', '#6ba8e8', '#ff5c7a', '#e8ecf4'];
+    const slice = fresh.slice(0, MAX_SUBMENU_ITEMS);
+    const children: MenuItemConfig[] = slice.map((app, index) => ({
+      id: `app-pc-${index}-${app.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+      label: app.label,
+      icon: 'apps',
+      color: palette[index % palette.length],
+      actionType: 'openPath',
+      value: app.path,
+    }));
+
+    update((current) => ({
+      ...current,
+      items: [
+        ...current.items.filter((item) => item.id !== 'apps-pc'),
+        {
+          id: 'apps-pc',
+          label: 'Apps do PC',
+          icon: 'apps',
+          color: '#6ba8e8',
+          actionType: 'submenu',
+          children,
+        },
+      ],
+    }));
+
+    setDetectedMessage({
+      tone: 'success',
+      text: `Submenu "Apps do PC" com ${slice.length} atalhos adicionado ao rascunho. Salve para aplicar.`,
+    });
+  };
 
   const handleExport = async () => {
     try {
@@ -228,6 +320,47 @@ export function GeneralPage({ config, update, autostartActive, dirty }: GeneralP
         {presetMessage ? (
           <p className={`preset-message is-${presetMessage.tone}`} role="status">
             {presetMessage.text}
+          </p>
+        ) : null}
+      </Card>
+
+      <Card
+        title="Preset inicial"
+        description="Descobre apps instalados a partir dos atalhos do Menu Iniciar."
+        icon={<Sparkles size={16} />}
+      >
+        <p className="page-hint">
+          Lê apenas arquivos <strong>.lnk</strong> locais do Menu Iniciar e ignora desinstaladores,
+          ajuda e sites. Nada é enviado para fora da máquina.
+        </p>
+        <div className="ui-inline">
+          <Button
+            icon={<Search size={15} />}
+            onClick={() => void detectApps()}
+            loading={detecting}
+          >
+            Detectar apps
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={addDetectedSubmenu}
+            disabled={!detectedApps?.length}
+          >
+            Adicionar como submenu
+          </Button>
+        </div>
+        {detectedApps?.length ? (
+          <p className="page-hint">
+            {detectedApps
+              .slice(0, 6)
+              .map((app) => app.label)
+              .join(' · ')}
+            {detectedApps.length > 6 ? ` · +${detectedApps.length - 6}` : ''}
+          </p>
+        ) : null}
+        {detectedMessage ? (
+          <p className={`preset-message is-${detectedMessage.tone}`} role="status">
+            {detectedMessage.text}
           </p>
         ) : null}
       </Card>

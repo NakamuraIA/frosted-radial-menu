@@ -3,7 +3,17 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
-## [1.3.0] — não lançado
+## [1.4.0] — não lançado
+
+### Adicionado
+
+- **Detecção de apps instalados**: lê atalhos `.lnk` dos dois Menus Iniciar (usuário e
+  máquina), ignora desinstaladores/ajuda/sites e monta um submenu **Apps do PC** (até 8)
+  no rascunho, sem duplicar apps que já estão no menu. Nada sai da máquina.
+- Módulo `platform/apps` com 6 testes (filtro, rótulos, varredura de árvore e limite) —
+  51 testes Rust no total.
+
+## [1.3.0] — 2026-10-24
 
 ### Adicionado
 

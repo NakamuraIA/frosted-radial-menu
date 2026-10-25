@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type { MenuItemConfig, RadialConfig, SystemStats } from './config';
+import type { DetectedApp, MenuItemConfig, RadialConfig, SystemStats } from './config';
 
 /**
  * Ponto único de contato com o backend Rust.
@@ -35,6 +35,10 @@ export const api = {
     invoke<void>('set_desktop_shortcut', { enabled }),
 
   getSystemStats: () => invoke<SystemStats>('get_system_stats'),
+
+  /** Lê o Menu Iniciar (somente atalhos locais) e devolve apps candidatos. */
+  detectInstalledApps: (limit?: number) =>
+    invoke<DetectedApp[]>('detect_installed_apps', { limit }),
 
   /** Grava a configuração atual como preset JSON no caminho escolhido. */
   exportPreset: (path: string, config: RadialConfig) =>

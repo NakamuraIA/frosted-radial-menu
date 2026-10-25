@@ -152,14 +152,11 @@ Concluido:
 - Seletor nativo de arquivo/pasta nos campos de destino e pasta de trabalho.
 - Criar/remover atalho na Área de Trabalho pelo painel, com estado real e sem
   administrador (`.lnk` via COM em processo oculto).
+- Gerador de preset inicial baseado no PC: lê atalhos do Menu Iniciar, filtra
+  desinstaladores/ajuda/sites e monta o submenu "Apps do PC" sem duplicar.
 
 Pendente:
 
-- Gerador de preset inicial baseado no PC:
-  - detectar VS Code;
-  - detectar navegadores;
-  - detectar pastas comuns;
-  - detectar apps conhecidos sem enviar dados para fora.
 - Atalhos por ação.
 - Coleta real de GPU; widget de mídia; tema claro; wallpaper; dock e painéis
   flutuantes (dependem de backend/modelo de config novo).

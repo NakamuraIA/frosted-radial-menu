@@ -5,6 +5,7 @@
 //! `lib.rs` referencia os caminhos completos porque o macro procura os itens
 //! gerados no módulo onde o comando foi declarado.
 
+pub mod apps;
 pub mod autostart;
 pub mod config;
 pub mod desktop;

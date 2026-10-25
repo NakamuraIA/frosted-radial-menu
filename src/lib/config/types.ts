@@ -75,6 +75,12 @@ export interface SystemStats {
   gpu: number | null;
 }
 
+/** Atalho encontrado no Menu Iniciar pelo detector de apps. */
+export interface DetectedApp {
+  label: string;
+  path: string;
+}
+
 export interface FlattenedMenuItem {
   item: MenuItemConfig;
   path: string;
