@@ -39,6 +39,10 @@
 
 <div align="center">
 
+**Demonstração** — abertura, submenu e fechamento com Esc:
+
+![Demonstração do menu radial](docs/media/menu-demo.gif)
+
 ![Configurações — Geral](docs/screenshots/settings-geral.png)
 
 ![Configurações — Menu radial com prévia](docs/screenshots/settings-menu.png)
