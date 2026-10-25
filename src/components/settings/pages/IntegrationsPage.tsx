@@ -10,6 +10,7 @@ import {
 import type { ReactNode } from 'react';
 
 import { Badge, Card, PageHeader } from '../../ui';
+import { isWindows } from '../../../lib/tauri';
 import type { RadialConfig } from '../../../lib/config';
 
 interface IntegrationsPageProps {
@@ -32,6 +33,7 @@ interface IntegrationRow {
  * explicitamente o que ainda não foi implementado.
  */
 export function IntegrationsPage({ config, autostartActive }: IntegrationsPageProps) {
+  const windows = isWindows();
   const autostartLabel =
     autostartActive === null ? 'Não verificado' : autostartActive ? 'Ativo' : 'Inativo';
 
@@ -45,11 +47,12 @@ export function IntegrationsPage({ config, autostartActive }: IntegrationsPagePr
     },
     {
       icon: <Power size={16} />,
-      title: 'Inicialização com o Windows',
-      description:
-        'Registro em HKCU\\...\\Run, no usuário atual. Não exige administrador nem tarefa agendada.',
-      label: autostartLabel,
-      tone: autostartActive ? 'success' : 'warning',
+      title: windows ? 'Inicialização com o Windows' : 'Inicialização automática',
+      description: windows
+        ? 'Registro em HKCU\\...\\Run, no usuário atual. Não exige administrador nem tarefa agendada.'
+        : 'No Linux não há registro equivalente; use o autostart do seu desktop.',
+      label: windows ? autostartLabel : 'Indisponível',
+      tone: windows ? (autostartActive ? 'success' : 'warning') : 'neutral',
     },
     {
       icon: <AppWindow size={16} />,
@@ -93,10 +96,10 @@ export function IntegrationsPage({ config, autostartActive }: IntegrationsPagePr
       <PageHeader
         kicker="Sistema"
         title="Integrações"
-        description="O que está realmente conectado ao Windows hoje — sem simulações."
+        description="O que está realmente conectado ao sistema hoje — sem simulações."
       />
 
-      <Card title="Recursos do sistema" description="Estado lido do backend e do registro do Windows.">
+      <Card title="Recursos do sistema" description="Estado lido do backend e do sistema operacional.">
         <div className="integration-list">
           {rows.map((row) => (
             <div className="integration-row" key={row.title}>

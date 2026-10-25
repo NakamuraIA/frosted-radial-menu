@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 
 import { Button, Card, ConfirmDialog, PageHeader, Switch } from '../../ui';
 import { api } from '../../../lib/api';
+import { isWindows } from '../../../lib/tauri';
 import {
   FALLBACK_CONFIG,
   MAX_MAIN_SLICES,
@@ -40,6 +41,7 @@ export function GeneralPage({ config, update, autostartActive, dirty }: GeneralP
   const [confirmReset, setConfirmReset] = useState(false);
   const [pendingPreset, setPendingPreset] = useState<RadialConfig | null>(null);
   const [presetMessage, setPresetMessage] = useState<PresetMessage | null>(null);
+  const windows = isWindows();
   const [shortcutActive, setShortcutActive] = useState<boolean | null>(null);
   const [shortcutBusy, setShortcutBusy] = useState(false);
   const [shortcutMessage, setShortcutMessage] = useState<PresetMessage | null>(null);
@@ -247,38 +249,61 @@ const errorText = (error: unknown) =>
 
       <Card
         title="Inicialização"
-        description="Como o launcher entra em ação quando o Windows liga."
+        description={
+          windows
+            ? 'Como o launcher entra em ação quando o Windows liga.'
+            : 'Indisponível no Linux: o app não registra início automático aqui.'
+        }
         icon={<Power size={16} />}
       >
         <Switch
-          label="Iniciar com o Windows"
-          description="Registra o app na chave Run do usuário atual. Não exige permissões de administrador."
+          label={windows ? 'Iniciar com o Windows' : 'Iniciar com o sistema (só Windows)'}
+          description={
+            windows
+              ? 'Registra o app na chave Run do usuário atual. Não exige permissões de administrador.'
+              : 'Este recurso usa o registro do Windows e não existe no Linux.'
+          }
           checked={config.preferences.autostartEnabled}
+          disabled={!windows}
           onChange={(value) => patchPreference({ autostartEnabled: value })}
         />
         <p className="page-hint">
-          Estado real no sistema:{' '}
-          <strong>
-            {autostartActive === null
-              ? 'indisponível'
-              : autostartActive
-                ? 'registrado'
-                : 'não registrado'}
-          </strong>
-          . A alteração é aplicada quando você salvar.
+          {windows ? (
+            <>
+              Estado real no sistema:{' '}
+              <strong>
+                {autostartActive === null
+                  ? 'indisponível'
+                  : autostartActive
+                    ? 'registrado'
+                    : 'não registrado'}
+              </strong>
+              . A alteração é aplicada quando você salvar.
+            </>
+          ) : (
+            'Sem equivalente no Linux — use o autostart do seu desktop, se precisar.'
+          )}
         </p>
       </Card>
 
       <Card
         title="Atalho na Área de Trabalho"
-        description="Um atalho .lnk apontando para este executável."
+        description={
+          windows
+            ? 'Um atalho .lnk apontando para este executável.'
+            : 'No Linux, crie o atalho pelo seu menu de aplicativos (.desktop).'
+        }
         icon={<MonitorDown size={16} />}
       >
         <Switch
-          label="Atalho no Desktop"
-          description="Cria ou remove na hora, sem depender do botão Salvar e sem pedir administrador."
+          label={windows ? 'Atalho no Desktop' : 'Atalho no Desktop (só Windows)'}
+          description={
+            windows
+              ? 'Cria ou remove na hora, sem depender do botão Salvar e sem pedir administrador.'
+              : 'Atalhos .lnk são do Windows; este controle fica desligado no Linux.'
+          }
           checked={shortcutActive ?? false}
-          disabled={shortcutActive === null || shortcutBusy}
+          disabled={!windows || shortcutActive === null || shortcutBusy}
           onChange={(value) => void toggleDesktopShortcut(value)}
         />
         <p className="page-hint">
@@ -301,19 +326,29 @@ const errorText = (error: unknown) =>
 
       <Card
         title="Execução de comandos"
-        description="Como os comandos de shell são disparados pelas fatias."
+        description={
+          windows
+            ? 'Como os comandos de shell são disparados pelas fatias.'
+            : 'No Linux os comandos rodam em bash, com os privilégios do usuário.'
+        }
         icon={<ShieldAlert size={16} />}
       >
-        <Switch
-          label="Rodar comandos como administrador"
-          description="Cada comando abre o prompt de elevação (UAC) do Windows. Desligado, roda com os privilégios do usuário."
-          checked={config.preferences.runCommandsAsAdmin}
-          onChange={(value) => patchPreference({ runCommandsAsAdmin: value })}
-        />
-        <p className="page-hint">
-          Recomendado deixar desligado, exceto para comandos que realmente precisam de
-          privilégio elevado.
-        </p>
+        {windows ? (
+          <>
+            <Switch
+              label="Rodar comandos como administrador"
+              description="Cada comando abre o prompt de elevação (UAC) do Windows. Desligado, roda com os privilégios do usuário."
+              checked={config.preferences.runCommandsAsAdmin}
+              onChange={(value) => patchPreference({ runCommandsAsAdmin: value })}
+            />
+            <p className="page-hint">
+              Recomendado deixar desligado, exceto para comandos que realmente precisam de
+              privilégio elevado.
+            </p>
+          </>
+        ) : (
+          <p className="page-hint">Elevação (UAC) é um recurso do Windows; aqui não se aplica.</p>
+        )}
       </Card>
 
       <Card

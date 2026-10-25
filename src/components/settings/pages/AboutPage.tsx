@@ -2,6 +2,7 @@ import { Info, MonitorCog, ScrollText } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { Card, PageHeader } from '../../ui';
+import { isWindows } from '../../../lib/tauri';
 
 interface AboutPageProps {
   version: string;
@@ -46,11 +47,11 @@ export function AboutPage({ version }: AboutPageProps) {
             </div>
             <div>
               <dt>Plataforma alvo</dt>
-              <dd>Windows 10/11 (x64)</dd>
+              <dd>{isWindows() ? 'Windows 10/11 (x64)' : 'Linux (experimental, x64)'}</dd>
             </div>
             <div>
               <dt>Runtime</dt>
-              <dd>WebView2</dd>
+              <dd>{isWindows() ? 'WebView2' : 'WebKitGTK'}</dd>
             </div>
           </dl>
         </Card>
